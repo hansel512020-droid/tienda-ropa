@@ -18,7 +18,10 @@ Todo está en `src/config.ts`:
 1. Pon sus fotos en `public/productos/`. Mejor en vertical (4:5) y de menos de 300 KB.
 2. En `src/productos.ts`, copia un bloque y cambia los datos. Si cada color tiene su foto,
    ponla en el `foto` de ese color: al elegirlo en la ficha, la foto cambia.
-3. Borra las prendas de ejemplo (las que llevan `ejemplo: true`). Cuando no quede ninguna,
+3. En `para` pon `'hombre'`, `'mujer'` o `'unisex'`: decide en qué sección del menú sale (lo
+   unisex sale en las dos). Las secciones y categorías del menú se crean solas según las
+   prendas que haya.
+4. Borra las prendas de ejemplo (las que llevan `ejemplo: true`). Cuando no quede ninguna,
    desaparece el aviso de "tienda en preparación".
 
 ## Publicarla

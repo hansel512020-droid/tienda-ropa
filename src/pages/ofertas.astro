@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import Listado from '../components/Listado.astro';
+import { ofertas } from '../productos';
+---
+
+<Base titulo="Ofertas">
+  <Listado
+    antetitulo="Rebajado"
+    titulo="Ofertas"
+    productos={ofertas}
+    migas={[{ texto: 'Inicio', href: '/' }, { texto: 'Ofertas' }]}
+    vacio="Ahora no hay ofertas. Vuelve pronto."
+  />
+</Base>

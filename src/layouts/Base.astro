@@ -1,8 +1,9 @@
 ---
 import '../styles/global.css';
 import Icono from '../components/Icono.astro';
-import { TIENDA } from '../config';
-import { hayEjemplos } from '../productos';
+import { GRUPOS, PUBLICOS, TIENDA, ruta } from '../config';
+import { PRODUCTOS, esPara, hayEjemplos, ofertas } from '../productos';
+import { textoDe } from '../buscador';
 // Las dos letras de la marca, pedidas desde el principio (ver el <head>).
 import letraTitulos from '@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2?url';
 import letraTexto from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url';
@@ -20,6 +21,33 @@ const canonica = new URL(Astro.url.pathname, Astro.site).href;
 const whatsapp = TIENDA.whatsapp
   ? `https://wa.me/${TIENDA.whatsapp}?text=${encodeURIComponent(`¡Hola ${TIENDA.nombre}! Tengo una consulta.`)}`
   : null;
+
+/*
+ * El menú: Hombre y Mujer, y dentro de cada uno los grupos (Ropa, Accesorios)
+ * con sus categorías. Solo las que tienen alguna prenda: un enlace que lleva a
+ * una página vacía frustra.
+ */
+const secciones = Object.entries(PUBLICOS).map(([clave, nombre]) => ({
+  clave,
+  nombre,
+  grupos: GRUPOS.map((g) => ({
+    nombre: g.nombre,
+    categorias: g.categorias.filter((c) =>
+      PRODUCTOS.some((p) => p.categoria === c && esPara(p, clave as keyof typeof PUBLICOS)),
+    ),
+  })).filter((g) => g.categorias.length),
+}));
+
+/** Lo que necesita el buscador, dentro de la página: busca sin ir al servidor. */
+const indice = PRODUCTOS.map((p) => ({
+  s: p.slug,
+  n: p.nombre,
+  c: p.categoria,
+  p: p.precio,
+  f: p.fotos[0],
+  b: p.fondo,
+  t: textoDe(p),
+}));
 ---
 
 <!doctype html>
@@ -55,17 +83,79 @@ const whatsapp = TIENDA.whatsapp
 
     <header class="cabecera">
       <div class="contenedor fila">
-        <a href="/" class="logo display">{TIENDA.nombre}</a>
-        <nav class="nav">
-          <a href="/#catalogo" class="rotulo">Catálogo</a>
-          <a href="/#como-comprar" class="rotulo solo-ancho">Cómo comprar</a>
+        <div class="lado">
+          <button class="icono-boton" type="button" data-abre-menu aria-label="Abrir menú">
+            <Icono nombre="menu" />
+          </button>
+          <a href="/" class="logo display">{TIENDA.nombre}</a>
+        </div>
+        <nav class="nav" aria-label="Secciones">
+          {secciones.map((s) => <a href={`/${s.clave}`} class="rotulo">{s.nombre}</a>)}
+          <a href="/novedades" class="rotulo">Novedades</a>
+          {ofertas.length ? <a href="/ofertas" class="rotulo">Ofertas</a> : null}
+        </nav>
+        <div class="lado">
+          <button class="icono-boton" type="button" data-abre-busqueda aria-label="Buscar">
+            <Icono nombre="buscar" />
+          </button>
           <button class="bolsa" type="button" data-abre-carrito aria-label="Abrir carrito">
             <Icono nombre="bolsa" tam={20} />
             <span class="contador" data-contador hidden>0</span>
           </button>
-        </nav>
+        </div>
       </div>
     </header>
+
+    <dialog class="menu" data-menu aria-label="Menú">
+      <div class="menu-cabeza">
+        <span class="display">Menú</span>
+        <button type="button" class="cerrar" data-cierra-menu aria-label="Cerrar menú">
+          <Icono nombre="cerrar" />
+        </button>
+      </div>
+      <form class="buscador" action="/buscar" method="get" role="search">
+        <Icono nombre="buscar" tam={20} />
+        <input
+          type="search"
+          name="q"
+          placeholder="Busca hoodies, camisas, gorras…"
+          autocomplete="off"
+          enterkeyhint="search"
+          aria-label="Buscar en la tienda"
+          data-busca
+        />
+      </form>
+      <ul class="resultados" data-resultados></ul>
+      <nav class="menu-nav" aria-label="Menú">
+        {
+          secciones.map((s) => (
+            <details class="seccion">
+              <summary class="display">{s.nombre}</summary>
+              <div class="seccion-dentro">
+                <a href={`/${s.clave}`} class="ver-todo rotulo">
+                  Ver todo {s.nombre.toLowerCase()} →
+                </a>
+                {s.grupos.map((g) => (
+                  <div class="grupo">
+                    <span class="rotulo grupo-nombre">{g.nombre}</span>
+                    {g.categorias.map((c) => (
+                      <a href={`/${s.clave}/${ruta(c)}`}>{c}</a>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ))
+        }
+        <a href="/novedades" class="enlace-grande display">Novedades</a>
+        {ofertas.length ? <a href="/ofertas" class="enlace-grande display">Ofertas</a> : null}
+        <div class="menu-pie">
+          <a href="/#como-comprar" class="rotulo">Cómo comprar</a>
+          {whatsapp ? <a href={whatsapp} target="_blank" rel="noopener" class="rotulo">WhatsApp</a> : null}
+        </div>
+      </nav>
+    </dialog>
+    <script type="application/json" id="indice" set:html={JSON.stringify(indice)} />
 
     <main>
       <slot />
@@ -178,6 +268,7 @@ const whatsapp = TIENDA.whatsapp
     <script>
       import '../scripts/carrito';
       import '../scripts/efectos';
+      import '../scripts/menu';
     </script>
   </body>
 </html>
@@ -204,15 +295,40 @@ const whatsapp = TIENDA.whatsapp
     height: 64px;
   }
   .logo {
-    font-size: 17px;
+    font-size: clamp(14px, 4vw, 17px);
     text-decoration: none;
     line-height: 1;
     color: var(--acento);
   }
-  .nav {
+  .lado {
     display: flex;
     align-items: center;
-    gap: 22px;
+    gap: 10px;
+  }
+  .icono-boton {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--tinta);
+    transition: background 0.2s ease;
+  }
+  .icono-boton:hover {
+    background: rgb(255 255 255 / 0.1);
+  }
+  /* Las secciones a la vista solo en pantallas anchas; en el móvil, en el menú. */
+  .nav {
+    display: none;
+    align-items: center;
+    gap: 26px;
+  }
+  @media (min-width: 900px) {
+    .nav {
+      display: flex;
+    }
   }
   .nav a {
     text-decoration: none;
@@ -221,14 +337,6 @@ const whatsapp = TIENDA.whatsapp
   }
   .nav a:hover {
     color: var(--tinta);
-  }
-  .solo-ancho {
-    display: none;
-  }
-  @media (min-width: 640px) {
-    .solo-ancho {
-      display: inline;
-    }
   }
   .bolsa {
     position: relative;
@@ -362,6 +470,166 @@ const whatsapp = TIENDA.whatsapp
   .brindis:global(.visible) {
     opacity: 1;
     transform: translate(-50%, 0);
+  }
+
+  /* ── Menú lateral ── */
+  .menu {
+    width: min(440px, 100vw);
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0 auto 0 0;
+    padding: 0;
+    border: 0;
+    border-right: 2px solid #fff;
+    background: var(--fondo);
+    color: var(--tinta);
+  }
+  .menu[open] {
+    display: flex;
+    flex-direction: column;
+    animation: entra-izq 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .menu::backdrop {
+    background: rgb(0 0 0 / 0.72);
+  }
+  @keyframes entra-izq {
+    from {
+      transform: translateX(-60px);
+      opacity: 0;
+    }
+  }
+  .menu-cabeza {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+  }
+  .menu-cabeza .display {
+    font-size: 24px;
+  }
+  .buscador {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 16px;
+    padding: 0 16px;
+    height: 54px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    background: var(--fondo-2);
+  }
+  .buscador input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--tinta);
+    font: inherit;
+    font-size: 16px;
+  }
+  .buscador input::placeholder {
+    color: var(--tinta-3);
+  }
+  .resultados {
+    list-style: none;
+    margin: 0;
+    padding: 0 16px;
+    overflow-y: auto;
+  }
+  .resultados:empty {
+    display: none;
+  }
+  .menu-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 16px calc(24px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+  }
+  /* Mientras se busca, solo resultados: el menú vuelve al borrar. */
+  .menu:global(.buscando) .menu-nav {
+    display: none;
+  }
+  .menu:global(.buscando) .resultados {
+    flex: 1;
+    padding-top: 14px;
+  }
+  .seccion {
+    border-bottom: 2px solid var(--borde);
+  }
+  .seccion summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 4px;
+    font-size: 30px;
+  }
+  .seccion summary::-webkit-details-marker {
+    display: none;
+  }
+  .seccion summary::after {
+    content: '+';
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    font-size: 22px;
+    transition: transform 0.25s ease;
+  }
+  .seccion[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .seccion-dentro {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 0 4px 22px;
+  }
+  .ver-todo {
+    color: var(--tinta-2);
+    text-decoration: none;
+  }
+  .grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .grupo-nombre {
+    color: var(--tinta-3);
+    margin-bottom: 6px;
+  }
+  .grupo a {
+    padding: 8px 0;
+    font-size: 19px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .grupo a:hover {
+    text-decoration: underline;
+  }
+  .enlace-grande {
+    padding: 20px 4px;
+    border-bottom: 2px solid var(--borde);
+    font-size: 30px;
+    text-decoration: none;
+  }
+  .menu-pie {
+    display: flex;
+    gap: 22px;
+    margin-top: auto;
+    padding-top: 28px;
+  }
+  .menu-pie a {
+    color: var(--tinta-2);
+    text-decoration: none;
   }
 
   .carrito {
@@ -543,6 +811,47 @@ const whatsapp = TIENDA.whatsapp
 </style>
 
 <style is:global>
+  /* Resultados del buscador del menú: también se pintan desde el script. */
+  .resultado {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--borde);
+    text-decoration: none;
+  }
+  .resultado-foto {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 70px;
+    border-radius: 12px;
+  }
+  .resultado-foto img {
+    width: 44px;
+    height: 56px;
+    object-fit: contain;
+  }
+  .resultado strong {
+    display: block;
+    font-size: 15px;
+  }
+  .resultado span span {
+    font-size: 13px;
+    color: var(--tinta-2);
+  }
+  .ver-todos {
+    display: block;
+    padding: 16px 0;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .sin-resultados {
+    padding: 18px 0;
+    color: var(--tinta-2);
+  }
+
   /* Las líneas del carrito se pintan desde el script, fuera del alcance de los estilos con ámbito. */
   .linea {
     display: grid;

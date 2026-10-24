@@ -1,0 +1,131 @@
+---
+import Base from '../layouts/Base.astro';
+import Icono from '../components/Icono.astro';
+import Tarjeta from '../components/Tarjeta.astro';
+import { PRODUCTOS } from '../productos';
+import { textoDe } from '../buscador';
+
+/*
+ * Resultados de búsqueda. La página trae todas las prendas y el navegador
+ * deja a la vista las que cuadran con ?q=… : así funciona en una web sin
+ * servidor y responde al instante al cambiar la búsqueda.
+ */
+---
+
+<Base titulo="Buscar">
+  <section class="contenedor buscar">
+    <h1 class="display">Buscar</h1>
+    <form class="caja" action="/buscar" method="get" role="search">
+      <Icono nombre="buscar" tam={22} />
+      <input
+        type="search"
+        name="q"
+        placeholder="Hoodies, camisas, gorras…"
+        autocomplete="off"
+        enterkeyhint="search"
+        aria-label="Buscar en la tienda"
+        data-consulta
+      />
+    </form>
+    <p class="resumen" data-resumen aria-live="polite"></p>
+    <div class="rejilla">
+      {
+        PRODUCTOS.map((p, i) => (
+          <div data-texto={textoDe(p)}>
+            <Tarjeta producto={p} indice={i} />
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { coincide } from '../buscador';
+
+  const entrada = document.querySelector<HTMLInputElement>('[data-consulta]')!;
+  const resumen = document.querySelector<HTMLElement>('[data-resumen]')!;
+  const prendas = [...document.querySelectorAll<HTMLElement>('[data-texto]')];
+
+  function filtra(q: string) {
+    let vistas = 0;
+    for (const el of prendas) {
+      const si = !q.trim() || coincide(el.dataset.texto ?? '', q);
+      el.hidden = !si;
+      if (si) {
+        vistas++;
+        el.querySelector('.revela')?.classList.add('visible');
+      }
+    }
+    resumen.textContent = !q.trim()
+      ? `${prendas.length} prendas en la tienda`
+      : vistas
+        ? `${vistas} ${vistas === 1 ? 'resultado' : 'resultados'} para «${q.trim()}»`
+        : `No encontramos «${q.trim()}». Prueba con hoodie, camisa, pantalón o gorra.`;
+    const url = new URL(location.href);
+    if (q.trim()) url.searchParams.set('q', q.trim());
+    else url.searchParams.delete('q');
+    history.replaceState(null, '', url);
+  }
+
+  entrada.value = new URL(location.href).searchParams.get('q') ?? '';
+  filtra(entrada.value);
+  entrada.addEventListener('input', () => filtra(entrada.value));
+</script>
+
+<style>
+  .buscar {
+    padding-top: 28px;
+  }
+  h1 {
+    font-size: clamp(44px, 11vw, 120px);
+    line-height: 0.92;
+  }
+  .caja {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 640px;
+    margin-top: 24px;
+    padding: 0 20px;
+    height: 60px;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    background: var(--fondo-2);
+  }
+  .caja input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--tinta);
+    font: inherit;
+    font-size: 17px;
+  }
+  .resumen {
+    margin: 18px 0 0;
+    color: var(--tinta-2);
+  }
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px 12px;
+    margin-top: 28px;
+  }
+  @media (min-width: 768px) {
+    .rejilla {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 44px 22px;
+    }
+  }
+  @media (min-width: 1150px) {
+    .rejilla {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  [data-texto][hidden] {
+    display: none;
+  }
+</style>

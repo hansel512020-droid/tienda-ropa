@@ -1,7 +1,21 @@
 ---
 /** Iconos de trazo, del mismo grosor en toda la tienda. */
 interface Props {
-  nombre: 'bolsa' | 'whatsapp' | 'camion' | 'billete' | 'cambio' | 'cerrar' | 'mas' | 'menos' | 'instagram' | 'tiktok' | 'flecha' | 'regla';
+  nombre:
+    | 'bolsa'
+    | 'whatsapp'
+    | 'camion'
+    | 'billete'
+    | 'cambio'
+    | 'cerrar'
+    | 'mas'
+    | 'menos'
+    | 'instagram'
+    | 'tiktok'
+    | 'flecha'
+    | 'regla'
+    | 'menu'
+    | 'buscar';
   tam?: number;
   clase?: string;
 }
@@ -53,6 +67,15 @@ const { nombre, tam = 22, clase } = Astro.props;
     </>
   )}
   {nombre === 'cerrar' && <path d="M6 6l12 12M18 6 6 18" />}
+  {nombre === 'menu' && <path d="M4 7h16M4 12h16M4 17h10" />}
+  {
+    nombre === 'buscar' && (
+      <>
+        <circle cx="11" cy="11" r="6.5" />
+        <path d="m16 16 4.5 4.5" />
+      </>
+    )
+  }
   {nombre === 'mas' && <path d="M12 5v14M5 12h14" />}
   {nombre === 'menos' && <path d="M5 12h14" />}
   {nombre === 'instagram' && (

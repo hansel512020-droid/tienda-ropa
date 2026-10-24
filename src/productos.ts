@@ -1,4 +1,4 @@
-import type { Categoria } from './config';
+import type { Categoria, Publico } from './config';
 
 /**
  * El catálogo.
@@ -26,6 +26,8 @@ export interface Producto {
   slug: string;
   nombre: string;
   categoria: Categoria;
+  /** Para quién es: sale en Hombre, en Mujer o, si es unisex, en las dos. */
+  para: Publico | 'unisex';
   /** En dólares. */
   precio: number;
   /** Precio anterior, si está rebajada: se muestra tachado. */
@@ -53,6 +55,7 @@ export const PRODUCTOS: Producto[] = [
     slug: 'hoodie-oversize',
     nombre: 'Hoodie Oversize Essential',
     categoria: 'Hoodies',
+    para: 'unisex',
     precio: 29.99,
     antes: 34.99,
     fotos: ['/productos/hoodie-negro.svg', '/productos/hoodie-gris.svg', '/productos/hoodie-crema.svg'],
@@ -72,6 +75,7 @@ export const PRODUCTOS: Producto[] = [
     slug: 'camiseta-boxy',
     nombre: 'Camiseta Boxy Heavy',
     categoria: 'Camisetas',
+    para: 'unisex',
     precio: 14.99,
     fotos: ['/productos/camiseta-blanco.svg', '/productos/camiseta-negro.svg'],
     fondo: '#2a2a2a',
@@ -89,6 +93,7 @@ export const PRODUCTOS: Producto[] = [
     slug: 'cargo-jogger',
     nombre: 'Cargo Jogger Utility',
     categoria: 'Pantalones',
+    para: 'hombre',
     precio: 27.99,
     fotos: ['/productos/cargo-oliva.svg', '/productos/cargo-negro.svg'],
     fondo: '#d9d9d7',
@@ -105,6 +110,7 @@ export const PRODUCTOS: Producto[] = [
     slug: 'conjunto-track',
     nombre: 'Conjunto Track Retro',
     categoria: 'Conjuntos',
+    para: 'mujer',
     precio: 39.99,
     antes: 49.99,
     fotos: ['/productos/conjunto-negro.svg'],
@@ -120,6 +126,7 @@ export const PRODUCTOS: Producto[] = [
     slug: 'gorra-dad-hat',
     nombre: 'Gorra Dad Hat',
     categoria: 'Gorras',
+    para: 'unisex',
     precio: 12.99,
     fotos: ['/productos/gorra-negro.svg', '/productos/gorra-beige.svg'],
     fondo: '#cfcfcd',
@@ -136,6 +143,7 @@ export const PRODUCTOS: Producto[] = [
     slug: 'camiseta-grafica',
     nombre: 'Camiseta Gráfica Mitad del Mundo',
     categoria: 'Camisetas',
+    para: 'hombre',
     precio: 16.99,
     fotos: ['/productos/grafica-negro.svg'],
     fondo: '#e2e2e0',
@@ -149,6 +157,12 @@ export const PRODUCTOS: Producto[] = [
 ];
 
 export const hayEjemplos = PRODUCTOS.some((p) => p.ejemplo);
+
+/** Si la prenda sale en la sección de ese público (lo unisex sale en las dos). */
+export const esPara = (p: Producto, publico: Publico) => p.para === publico || p.para === 'unisex';
+
+/** Las rebajadas: las que tienen precio anterior. */
+export const ofertas = PRODUCTOS.filter((p) => p.antes && !p.agotado);
 
 /** Lo nuevo y disponible, para el carrusel y la portada. */
 export const novedades = PRODUCTOS.filter((p) => p.nuevo && !p.agotado);

@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import Listado from '../../components/Listado.astro';
+import { CATEGORIAS, PUBLICOS, ruta, type Categoria, type Publico } from '../../config';
+import { PRODUCTOS, esPara } from '../../productos';
+
+/*
+ * /hombre, /mujer y cada categoría dentro: /hombre/hoodies, /mujer/camisetas…
+ * Solo se crean las que tienen prendas.
+ */
+export function getStaticPaths() {
+  return (Object.keys(PUBLICOS) as Publico[]).flatMap((publico) => {
+    const suyas = PRODUCTOS.filter((p) => esPara(p, publico));
+    const categorias = CATEGORIAS.filter((c) => suyas.some((p) => p.categoria === c));
+    return [
+      { params: { publico, categoria: undefined }, props: { publico, categoria: null, categorias } },
+      ...categorias.map((c) => ({
+        params: { publico, categoria: ruta(c) },
+        props: { publico, categoria: c, categorias },
+      })),
+    ];
+  });
+}
+
+const { publico, categoria, categorias } = Astro.props as {
+  publico: Publico;
+  categoria: Categoria | null;
+  categorias: Categoria[];
+};
+const nombre = PUBLICOS[publico];
+const productos = PRODUCTOS.filter((p) => esPara(p, publico) && (!categoria || p.categoria === categoria));
+const chips = [
+  { texto: 'Todo', href: `/${publico}`, activo: !categoria },
+  ...categorias.map((c) => ({ texto: c, href: `/${publico}/${ruta(c)}`, activo: c === categoria })),
+];
+const migas = [
+  { texto: 'Inicio', href: '/' },
+  categoria ? { texto: nombre, href: `/${publico}` } : { texto: nombre },
+  ...(categoria ? [{ texto: categoria }] : []),
+];
+---
+
+<Base titulo={categoria ? `${categoria} de ${nombre.toLowerCase()}` : nombre}>
+  <Listado
+    antetitulo={categoria ? nombre : 'Colección'}
+    titulo={categoria ?? nombre}
+    productos={productos}
+    chips={chips}
+    migas={migas}
+  />
+</Base>

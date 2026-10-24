@@ -49,3 +49,21 @@ export const TIENDA = {
 
 export const CATEGORIAS = ['Hoodies', 'Camisetas', 'Pantalones', 'Conjuntos', 'Gorras'] as const;
 export type Categoria = (typeof CATEGORIAS)[number];
+
+/** Cómo se agrupan las categorías en el menú, dentro de Hombre y de Mujer. */
+export const GRUPOS: { nombre: string; categorias: Categoria[] }[] = [
+  { nombre: 'Ropa', categorias: ['Hoodies', 'Camisetas', 'Pantalones', 'Conjuntos'] },
+  { nombre: 'Accesorios', categorias: ['Gorras'] },
+];
+
+/** Para quién es cada prenda. Lo unisex sale tanto en Hombre como en Mujer. */
+export const PUBLICOS = { hombre: 'Hombre', mujer: 'Mujer' } as const;
+export type Publico = keyof typeof PUBLICOS;
+
+/** La parte de la dirección de una categoría: "Hoodies" → "hoodies". */
+export const ruta = (texto: string) =>
+  texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-');

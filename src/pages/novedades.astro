@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import Listado from '../components/Listado.astro';
+import { novedades } from '../productos';
+---
+
+<Base titulo="Novedades">
+  <Listado
+    antetitulo="Recién llegado"
+    titulo="Novedades"
+    productos={novedades}
+    migas={[{ texto: 'Inicio', href: '/' }, { texto: 'Novedades' }]}
+    vacio="Muy pronto, nuevo drop."
+  />
+</Base>

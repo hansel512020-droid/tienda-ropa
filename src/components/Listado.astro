@@ -1,0 +1,148 @@
+---
+import Tarjeta from './Tarjeta.astro';
+import type { Producto } from '../productos';
+
+/**
+ * Una página de colección: Hombre, Mujer, una categoría, Novedades, Ofertas…
+ * Título grande, chips para saltar entre categorías y la rejilla de prendas.
+ */
+interface Props {
+  antetitulo: string;
+  titulo: string;
+  productos: Producto[];
+  /** Saltos a las categorías vecinas; el activo sale marcado. */
+  chips?: { texto: string; href: string; activo: boolean }[];
+  migas: { texto: string; href?: string }[];
+  vacio?: string;
+}
+const { antetitulo, titulo, productos, chips = [], migas, vacio = 'Pronto habrá prendas aquí.' } = Astro.props;
+// Lo disponible primero; lo agotado al final.
+const ordenados = [...productos].sort((a, b) => Number(!!a.agotado) - Number(!!b.agotado));
+---
+
+<section class="contenedor listado">
+  <nav class="migas" aria-label="Ruta">
+    {
+      migas.map((m, i) => (
+        <>
+          {i > 0 ? <span aria-hidden="true"> / </span> : null}
+          {m.href ? <a href={m.href}>{m.texto}</a> : <span>{m.texto}</span>}
+        </>
+      ))
+    }
+  </nav>
+
+  <p class="rotulo antetitulo">{antetitulo}</p>
+  <h1 class="display">{titulo}</h1>
+  <p class="cuenta">{productos.length} {productos.length === 1 ? 'prenda' : 'prendas'}</p>
+
+  {
+    chips.length ? (
+      <nav class="chips" aria-label="Categorías">
+        {chips.map((c) => (
+          <a href={c.href} class:list={['chip', { activo: c.activo }]} aria-current={c.activo ? 'page' : undefined}>
+            {c.texto}
+          </a>
+        ))}
+      </nav>
+    ) : null
+  }
+
+  {
+    ordenados.length ? (
+      <div class="rejilla">
+        {ordenados.map((p, i) => (
+          <Tarjeta producto={p} transicion indice={i} />
+        ))}
+      </div>
+    ) : (
+      <p class="vacio">{vacio}</p>
+    )
+  }
+</section>
+
+<style>
+  .listado {
+    padding-top: 28px;
+  }
+  .migas {
+    margin-bottom: 28px;
+    font-size: 13px;
+    color: var(--tinta-3);
+  }
+  .migas a {
+    color: var(--tinta-2);
+    text-decoration: none;
+  }
+  .antetitulo {
+    margin: 0 0 10px;
+    color: var(--tinta-3);
+  }
+  h1 {
+    font-size: clamp(44px, 11vw, 120px);
+    line-height: 0.92;
+  }
+  .cuenta {
+    margin: 14px 0 0;
+    color: var(--tinta-2);
+  }
+  .chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: 28px -16px 0;
+    padding: 4px 16px 8px;
+    scrollbar-width: none;
+  }
+  @media (min-width: 768px) {
+    .chips {
+      margin-inline: 0;
+      padding-inline: 0;
+      flex-wrap: wrap;
+    }
+  }
+  .chip {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 18px;
+    border: 2px solid var(--tinta);
+    border-radius: 999px;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+  .chip:hover {
+    background: rgb(255 255 255 / 0.1);
+  }
+  .chip.activo {
+    background: #fff;
+    color: #000;
+  }
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px 12px;
+    margin-top: 36px;
+  }
+  @media (min-width: 768px) {
+    .rejilla {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 44px 22px;
+    }
+  }
+  @media (min-width: 1150px) {
+    .rejilla {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .vacio {
+    margin: 48px 0;
+    color: var(--tinta-2);
+    font-size: 17px;
+  }
+</style>
