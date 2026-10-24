@@ -7,6 +7,7 @@ import { textoDe } from '../buscador';
 // Las dos letras de la marca, pedidas desde el principio (ver el <head>).
 import letraTitulos from '@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2?url';
 import letraTexto from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
   titulo?: string;
@@ -77,6 +78,7 @@ const indice = PRODUCTOS.map((p) => ({
     <meta name="twitter:card" content="summary_large_image" />
     <!-- Antes de pintar: con JavaScript, lo que aparece al bajar empieza escondido. -->
     <script is:inline>document.documentElement.classList.add('js');</script>
+    <Analytics />
   </head>
   <body>
     {hayEjemplos ? <div class="aviso rotulo">Tienda en preparación · Las prendas que ves son de ejemplo</div> : null}
