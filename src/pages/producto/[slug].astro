@@ -288,7 +288,8 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     border-radius: var(--radio);
-    background: #ebe8e2;
+    background: #18181a;
+    border: 1px solid rgb(255 255 255 / 0.06);
     scrollbar-width: none;
   }
   .fotos img {
@@ -305,9 +306,13 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
   .miniaturas button {
     padding: 0;
     border: 1px solid var(--borde);
-    border-radius: 10px;
+    border-radius: 8px;
     overflow: hidden;
-    background: #ebe8e2;
+    background: #18181a;
+    transition: border-color 0.2s ease;
+  }
+  .miniaturas button:hover {
+    border-color: var(--acento);
   }
   .miniaturas img {
     width: 64px;
@@ -377,7 +382,7 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
   .color input:checked + span {
     box-shadow:
       0 0 0 3px var(--fondo),
-      0 0 0 5px var(--tinta);
+      0 0 0 5px var(--acento);
   }
   .color input:focus-visible + span,
   .talla input:focus-visible + span {
@@ -391,15 +396,21 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     height: 48px;
     padding: 0 14px;
     border: 1px solid var(--borde);
-    border-radius: 12px;
-    background: var(--carta);
+    border-radius: 10px;
+    background: transparent;
     font-weight: 700;
     cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background 0.2s ease;
+  }
+  .talla span:hover {
+    border-color: var(--tinta-3);
   }
   .talla input:checked + span {
-    background: var(--tinta);
-    border-color: var(--tinta);
-    color: #fff;
+    background: var(--acento);
+    border-color: var(--acento);
+    color: #0b0b0c;
   }
   .guia {
     font-weight: 500;
@@ -466,8 +477,8 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     justify-content: space-between;
     gap: 12px;
     padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-    background: rgb(255 255 255 / 0.96);
-    backdrop-filter: blur(10px);
+    background: rgb(17 17 19 / 0.92);
+    backdrop-filter: blur(12px);
     border-top: 1px solid var(--borde);
     transform: translateY(110%);
     transition: transform 0.3s ease;
@@ -513,7 +524,8 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     flex-direction: column;
     gap: 12px;
     border-radius: var(--radio);
-    background: var(--carta);
+    background: var(--fondo-2);
+    border: 1px solid var(--borde);
     font-size: 14px;
     color: var(--tinta-2);
   }
@@ -524,7 +536,7 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
   }
   .garantias :global(svg) {
     flex: none;
-    color: var(--tinta);
+    color: var(--acento);
   }
   .descripcion h2 {
     font-size: 16px;

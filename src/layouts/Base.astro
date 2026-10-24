@@ -28,7 +28,7 @@ const whatsapp = TIENDA.whatsapp
     <meta name="description" content={descripcion} />
     <link rel="canonical" href={canonica} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#111111" />
+    <meta name="theme-color" content="#0b0b0c" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={TIENDA.nombre} />
     <meta property="og:title" content={tituloCompleto} />
@@ -40,20 +40,16 @@ const whatsapp = TIENDA.whatsapp
     <script is:inline>document.documentElement.classList.add('js');</script>
   </head>
   <body>
-    {
-      hayEjemplos ? (
-        <div class="aviso">Tienda en preparación: las prendas que ves son de ejemplo.</div>
-      ) : null
-    }
+    {hayEjemplos ? <div class="aviso rotulo">Tienda en preparación · Las prendas que ves son de ejemplo</div> : null}
 
     <header class="cabecera">
       <div class="contenedor fila">
         <a href="/" class="logo display">{TIENDA.nombre}</a>
         <nav class="nav">
-          <a href="/#catalogo">Catálogo</a>
-          <a href="/#como-comprar" class="solo-ancho">Cómo comprar</a>
+          <a href="/#catalogo" class="rotulo">Catálogo</a>
+          <a href="/#como-comprar" class="rotulo solo-ancho">Cómo comprar</a>
           <button class="bolsa" type="button" data-abre-carrito aria-label="Abrir carrito">
-            <Icono nombre="bolsa" />
+            <Icono nombre="bolsa" tam={20} />
             <span class="contador" data-contador hidden>0</span>
           </button>
         </nav>
@@ -67,33 +63,37 @@ const whatsapp = TIENDA.whatsapp
     <footer class="pie">
       <div class="contenedor pie-filas">
         <div class="pie-marca">
-          <span class="logo display">{TIENDA.nombre}</span>
+          <p class="rotulo pie-rotulo">{TIENDA.eslogan}</p>
           <p>{TIENDA.descripcion}</p>
         </div>
         <div class="pie-enlaces">
+          <a href="/#catalogo" class="rotulo">Catálogo</a>
+          <a href="/#como-comprar" class="rotulo">Cómo comprar</a>
           {
             whatsapp ? (
-              <a href={whatsapp} target="_blank" rel="noopener">
-                <Icono nombre="whatsapp" tam={18} /> WhatsApp
+              <a href={whatsapp} target="_blank" rel="noopener" class="rotulo">
+                <Icono nombre="whatsapp" tam={16} /> WhatsApp
               </a>
             ) : null
           }
           {
             TIENDA.redes.instagram ? (
-              <a href={`https://instagram.com/${TIENDA.redes.instagram}`} target="_blank" rel="noopener">
-                <Icono nombre="instagram" tam={18} /> Instagram
+              <a href={`https://instagram.com/${TIENDA.redes.instagram}`} target="_blank" rel="noopener" class="rotulo">
+                <Icono nombre="instagram" tam={16} /> Instagram
               </a>
             ) : null
           }
           {
             TIENDA.redes.tiktok ? (
-              <a href={`https://www.tiktok.com/@${TIENDA.redes.tiktok}`} target="_blank" rel="noopener">
-                <Icono nombre="tiktok" tam={18} /> TikTok
+              <a href={`https://www.tiktok.com/@${TIENDA.redes.tiktok}`} target="_blank" rel="noopener" class="rotulo">
+                <Icono nombre="tiktok" tam={16} /> TikTok
               </a>
             ) : null
           }
         </div>
       </div>
+      <!-- El nombre de la marca de lado a lado, como cierre. -->
+      <div class="pie-gigante display" aria-hidden="true">{TIENDA.nombre}</div>
       <div class="contenedor pie-legal">
         © {new Date().getFullYear()} {TIENDA.nombre} · {TIENDA.envio.resumen} · {TIENDA.pagos[0]}
       </div>
@@ -102,7 +102,7 @@ const whatsapp = TIENDA.whatsapp
     {
       whatsapp ? (
         <a class="flotante" href={whatsapp} target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
-          <Icono nombre="whatsapp" tam={28} />
+          <Icono nombre="whatsapp" tam={26} />
         </a>
       ) : null
     }
@@ -125,7 +125,7 @@ const whatsapp = TIENDA.whatsapp
             <div><span>Envío</span><span data-envio></span></div>
           </div>
 
-          <h3>Tus datos para el envío</h3>
+          <h3 class="rotulo">Tus datos para el envío</h3>
           <label>
             Nombre y apellido
             <input name="nombre" autocomplete="name" required />
@@ -174,44 +174,43 @@ const whatsapp = TIENDA.whatsapp
 <style>
   .aviso {
     background: var(--acento);
-    color: var(--tinta);
+    color: #0b0b0c;
     text-align: center;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 10px;
     padding: 8px 16px;
   }
   .cabecera {
     position: sticky;
     top: 0;
     z-index: 20;
-    background: rgb(17 17 17 / 0.96);
-    backdrop-filter: blur(8px);
-    color: #fff;
+    background: rgb(11 11 12 / 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid rgb(255 255 255 / 0.06);
   }
   .fila {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 64px;
+    height: 66px;
   }
   .logo {
     font-size: 26px;
+    letter-spacing: 0.02em;
     text-decoration: none;
     line-height: 1;
   }
   .nav {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 22px;
   }
   .nav a {
     text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
-    opacity: 0.85;
+    color: var(--tinta-2);
+    transition: color 0.2s ease;
   }
   .nav a:hover {
-    opacity: 1;
+    color: var(--tinta);
   }
   .solo-ancho {
     display: none;
@@ -227,24 +226,28 @@ const whatsapp = TIENDA.whatsapp
     place-items: center;
     width: 44px;
     height: 44px;
-    border: 0;
+    border: 1px solid var(--borde);
     border-radius: 50%;
-    background: rgb(255 255 255 / 0.08);
-    color: #fff;
+    background: var(--carta);
+    color: var(--tinta);
+    transition: border-color 0.2s ease;
+  }
+  .bolsa:hover {
+    border-color: var(--acento);
   }
   .contador {
     position: absolute;
-    top: 2px;
-    right: 0;
-    min-width: 19px;
-    height: 19px;
+    top: -2px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
     padding: 0 5px;
     border-radius: 999px;
     background: var(--acento);
-    color: var(--tinta);
+    color: #0b0b0c;
     font-size: 11px;
     font-weight: 800;
-    line-height: 19px;
+    line-height: 20px;
     text-align: center;
   }
   .contador[hidden] {
@@ -252,42 +255,57 @@ const whatsapp = TIENDA.whatsapp
   }
 
   .pie {
-    margin-top: 80px;
-    background: var(--tinta);
-    color: #fff;
-    padding: 48px 0 calc(28px + env(safe-area-inset-bottom));
+    margin-top: 120px;
+    border-top: 1px solid var(--borde);
+    padding: 56px 0 calc(24px + env(safe-area-inset-bottom));
+    overflow: hidden;
   }
   .pie-filas {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 28px;
+    gap: 32px;
   }
   .pie-marca {
     max-width: 420px;
   }
-  .pie-marca p {
-    color: rgb(255 255 255 / 0.65);
-    margin: 10px 0 0;
+  .pie-rotulo {
+    margin: 0;
+    color: var(--acento);
+  }
+  .pie-marca p:not(.pie-rotulo) {
+    color: var(--tinta-2);
+    margin: 12px 0 0;
     font-size: 14px;
   }
   .pie-enlaces {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
   }
   .pie-enlaces a {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     text-decoration: none;
-    font-weight: 600;
+    color: var(--tinta-2);
+  }
+  .pie-enlaces a:hover {
+    color: var(--acento);
+  }
+  .pie-gigante {
+    margin: 48px 0 0;
+    font-size: 19.5vw;
+    line-height: 0.82;
+    text-align: center;
+    white-space: nowrap;
+    color: transparent;
+    -webkit-text-stroke: 1px rgb(214 178 58 / 0.45);
+    user-select: none;
   }
   .pie-legal {
-    margin-top: 36px;
-    padding-top: 20px;
-    border-top: 1px solid rgb(255 255 255 / 0.12);
-    color: rgb(255 255 255 / 0.5);
+    margin-top: 24px;
+    color: var(--tinta-3);
     font-size: 12px;
   }
 
@@ -298,12 +316,12 @@ const whatsapp = TIENDA.whatsapp
     z-index: 30;
     display: grid;
     place-items: center;
-    width: 58px;
-    height: 58px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    background: #1fa855;
-    color: #fff;
-    box-shadow: var(--sombra);
+    background: #25d366;
+    color: #04190c;
+    box-shadow: 0 12px 30px rgb(37 211 102 / 0.3);
   }
 
   .brindis {
@@ -315,12 +333,12 @@ const whatsapp = TIENDA.whatsapp
     align-items: center;
     gap: 10px;
     max-width: calc(100vw - 32px);
-    padding: 12px 18px;
+    padding: 13px 20px;
     border-radius: 999px;
-    background: var(--tinta);
-    color: #fff;
+    background: var(--acento);
+    color: #0b0b0c;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
     box-shadow: var(--sombra);
     opacity: 0;
     transform: translate(-50%, 16px);
@@ -333,28 +351,31 @@ const whatsapp = TIENDA.whatsapp
     opacity: 1;
     transform: translate(-50%, 0);
   }
+
   .carrito {
-    width: min(440px, 100vw);
+    width: min(460px, 100vw);
     max-width: 100vw;
     height: 100dvh;
     max-height: 100dvh;
     margin: 0 0 0 auto;
     padding: 0;
     border: 0;
-    background: var(--fondo);
+    border-left: 1px solid var(--borde);
+    background: var(--fondo-2);
     color: var(--tinta);
   }
   .carrito[open] {
     display: flex;
     flex-direction: column;
-    animation: entra 0.22s ease-out;
+    animation: entra 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .carrito::backdrop {
-    background: rgb(0 0 0 / 0.45);
+    background: rgb(0 0 0 / 0.65);
+    backdrop-filter: blur(3px);
   }
   @keyframes entra {
     from {
-      transform: translateX(40px);
+      transform: translateX(60px);
       opacity: 0;
     }
   }
@@ -362,18 +383,18 @@ const whatsapp = TIENDA.whatsapp
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    padding: 18px 16px;
     border-bottom: 1px solid var(--borde);
   }
   .carrito-cabeza h2 {
-    font-size: 26px;
+    font-size: 28px;
   }
   .cerrar {
     display: grid;
     place-items: center;
     width: 44px;
     height: 44px;
-    border: 0;
+    border: 1px solid var(--borde);
     border-radius: 50%;
     background: var(--carta);
   }
@@ -398,17 +419,17 @@ const whatsapp = TIENDA.whatsapp
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
   .datos {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 20px;
+    margin-top: 18px;
   }
   .datos h3 {
-    font-size: 16px;
-    margin-top: 8px;
+    margin-top: 10px;
+    color: var(--acento);
   }
   .totales {
     display: flex;
@@ -417,12 +438,16 @@ const whatsapp = TIENDA.whatsapp
     padding: 14px;
     border-radius: var(--radio);
     background: var(--carta);
+    border: 1px solid var(--borde);
   }
   .totales div {
     display: flex;
     justify-content: space-between;
     gap: 12px;
     font-size: 14px;
+  }
+  .totales strong {
+    color: var(--acento);
   }
   .totales [data-envio] {
     color: var(--tinta-2);
@@ -434,19 +459,26 @@ const whatsapp = TIENDA.whatsapp
     gap: 6px;
     font-size: 13px;
     font-weight: 600;
+    color: var(--tinta-2);
   }
   .opcional {
     color: var(--tinta-3);
     font-weight: 500;
   }
   .datos input:not([type='radio']) {
-    height: 48px;
+    height: 50px;
     padding: 0 14px;
     border: 1px solid var(--borde);
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--carta);
+    color: var(--tinta);
     font: inherit;
     font-size: 16px;
+    transition: border-color 0.2s ease;
+  }
+  .datos input:not([type='radio']):focus {
+    outline: none;
+    border-color: var(--acento);
   }
   .datos input[aria-invalid='true'] {
     border-color: var(--rojo);
@@ -462,21 +494,26 @@ const whatsapp = TIENDA.whatsapp
   legend {
     font-size: 13px;
     font-weight: 600;
+    color: var(--tinta-2);
     margin-bottom: 6px;
   }
   .datos .opcion {
     flex-direction: row;
     align-items: center;
     gap: 10px;
-    padding: 12px 14px;
+    padding: 13px 14px;
     border: 1px solid var(--borde);
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--carta);
+    color: var(--tinta);
     font-weight: 500;
     font-size: 14px;
   }
+  .datos .opcion:has(input:checked) {
+    border-color: var(--acento);
+  }
   .datos .opcion input {
-    accent-color: var(--tinta);
+    accent-color: var(--acento);
     width: 18px;
     height: 18px;
   }
@@ -504,13 +541,14 @@ const whatsapp = TIENDA.whatsapp
     padding: 10px;
     border-radius: var(--radio);
     background: var(--carta);
+    border: 1px solid var(--borde);
   }
   .linea img {
     width: 72px;
     height: 90px;
     object-fit: cover;
-    border-radius: 10px;
-    background: #ebe8e2;
+    border-radius: 6px;
+    background: #222;
   }
   .linea-texto {
     display: flex;
@@ -531,6 +569,9 @@ const whatsapp = TIENDA.whatsapp
     flex-direction: column;
     align-items: flex-end;
     gap: 8px;
+  }
+  .linea-lado > strong {
+    color: var(--acento);
   }
   .cantidad {
     display: flex;
