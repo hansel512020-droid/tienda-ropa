@@ -183,10 +183,84 @@ h3 {
   outline-offset: 2px;
 }
 
+/* ── Movimiento ──────────────────────────────────────────────────────── */
+
+/*
+ * Transición suave al cambiar de página, sin JavaScript: el navegador funde
+ * una página con la siguiente y, si una foto lleva el mismo nombre de
+ * transición en las dos, la lleva de su sitio en la tarjeta a su sitio en la
+ * ficha. Donde no se admite, se navega normal.
+ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.28s;
+}
+
+::view-transition-group(*) {
+  animation-duration: 0.38s;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Aparición al bajar. Sin JavaScript (sin la clase .js) todo se ve desde el principio. */
+.js .revela {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--retraso, 0ms);
+}
+
+.js .revela.visible {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes salta {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+}
+
+.salta {
+  animation: salta 0.45s ease;
+}
+
+/* Grano de película sobre las secciones oscuras: les quita el aspecto de color plano. */
+.grano {
+  position: relative;
+  isolation: isolate;
+}
+
+.grano::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
 @media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
   * {
     transition: none !important;
     animation: none !important;
     scroll-behavior: auto !important;
+  }
+  .js .revela {
+    opacity: 1;
+    transform: none;
   }
 }

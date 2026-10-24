@@ -16,7 +16,8 @@ Todo está en `src/config.ts`:
 ## Añadir una prenda
 
 1. Pon sus fotos en `public/productos/`. Mejor en vertical (4:5) y de menos de 300 KB.
-2. En `src/productos.ts`, copia un bloque y cambia los datos.
+2. En `src/productos.ts`, copia un bloque y cambia los datos. Si cada color tiene su foto,
+   ponla en el `foto` de ese color: al elegirlo en la ficha, la foto cambia.
 3. Borra las prendas de ejemplo (las que llevan `ejemplo: true`). Cuando no quede ninguna,
    desaparece el aviso de "tienda en preparación".
 

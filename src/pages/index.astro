@@ -3,12 +3,21 @@ import Base from '../layouts/Base.astro';
 import Icono from '../components/Icono.astro';
 import Tarjeta from '../components/Tarjeta.astro';
 import { CATEGORIAS, TIENDA } from '../config';
-import { PRODUCTOS } from '../productos';
+import { PRODUCTOS, novedades } from '../productos';
 
 // Solo las categorías que tienen prendas: un filtro que no muestra nada frustra.
 const categorias = CATEGORIAS.filter((c) => PRODUCTOS.some((p) => p.categoria === c));
+const portadaDe = (c: string) => PRODUCTOS.find((p) => p.categoria === c && !p.agotado) ?? PRODUCTOS.find((p) => p.categoria === c)!;
 // Lo disponible primero; lo agotado al final.
 const catalogo = [...PRODUCTOS].sort((a, b) => Number(!!a.agotado) - Number(!!b.agotado));
+// Las tres fotos del collage de la portada.
+const collage = (novedades.length >= 3 ? novedades : catalogo).slice(0, 3);
+
+// El eslogan con su última palabra en dorado.
+const palabras = TIENDA.eslogan.split(' ');
+const ultima = palabras.pop();
+
+const cinta = [TIENDA.envio.resumen, 'Pagas al recibir', 'Cambio de talla', 'Nuevos drops cada semana'];
 
 const ventajas = [
   { icono: 'camion', titulo: TIENDA.envio.resumen, texto: TIENDA.envio.plazo },
@@ -33,39 +42,127 @@ const preguntas = [
     r: 'En cada prenda tienes la guía de tallas. Si dudas entre dos, escríbenos con tu altura y peso y te recomendamos.',
   },
 ];
+
+const whatsappTallas = TIENDA.whatsapp
+  ? `https://wa.me/${TIENDA.whatsapp}?text=${encodeURIComponent(`¡Hola ${TIENDA.nombre}! ¿Me ayudan con mi talla?`)}`
+  : '#como-comprar';
 ---
 
 <Base>
-  <section class="hero">
+  <!-- ── Portada ─────────────────────────────────────────────────────── -->
+  <section class="hero grano">
     <div class="contenedor hero-dentro">
-      <p class="hero-pre">Nueva colección</p>
-      <h1 class="display">{TIENDA.eslogan}</h1>
-      <p class="hero-texto">{TIENDA.descripcion}</p>
-      <div class="hero-botones">
-        <a class="boton boton--acento" href="#catalogo">Ver catálogo <Icono nombre="flecha" tam={18} /></a>
-        <a class="boton boton--borde" href="#como-comprar">Cómo comprar</a>
+      <div class="hero-texto">
+        <p class="pildora"><span class="punto"></span> Nueva colección</p>
+        <h1 class="display">
+          {palabras.join(' ')} <span class="dorado">{ultima}</span>
+        </h1>
+        <p class="hero-sub">{TIENDA.descripcion}</p>
+        <div class="hero-botones">
+          <a class="boton boton--acento" href="#catalogo">Ver catálogo <Icono nombre="flecha" tam={18} /></a>
+          <a class="boton boton--borde" href="#como-comprar">Cómo comprar</a>
+        </div>
+      </div>
+
+      <div class="collage" aria-hidden="true">
+        {
+          collage.map((p, i) => (
+            <a href={`/producto/${p.slug}`} class={`pieza pieza-${i + 1}`} tabindex="-1">
+              <img src={p.fotos[0]} alt="" width="800" height="1000" />
+              <span class="pieza-precio">${p.precio.toFixed(2)}</span>
+            </a>
+          ))
+        }
       </div>
     </div>
   </section>
 
-  <section class="ventajas contenedor" aria-label="Ventajas">
-    {
-      ventajas.map((v) => (
-        <div class="ventaja">
-          <span class="ventaja-icono">
-            <Icono nombre={v.icono} />
-          </span>
-          <div>
+  <!-- ── Cinta en movimiento ─────────────────────────────────────────── -->
+  <div class="cinta" aria-label={cinta.join(' · ')}>
+    <div class="cinta-pista" aria-hidden="true">
+      {
+        [0, 1].map(() => (
+          <div class="cinta-grupo">
+            {[...cinta, ...cinta].map((t) => (
+              <span>
+                {t} <b>✦</b>
+              </span>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- ── Categorías ──────────────────────────────────────────────────── -->
+  <section class="contenedor bloque">
+    <div class="titulo-fila revela">
+      <h2 class="display">Compra por estilo</h2>
+    </div>
+    <div class="estilos">
+      {
+        categorias.map((c, i) => {
+          const p = portadaDe(c);
+          return (
+            <a href={`/?c=${encodeURIComponent(c)}#catalogo`} class="estilo revela" style={`--retraso:${i * 60}ms`} data-ir-categoria={c}>
+              <img src={p.fotos[0]} alt="" loading="lazy" width="800" height="1000" />
+              <span class="estilo-nombre display">{c}</span>
+              <span class="estilo-flecha">
+                <Icono nombre="flecha" tam={18} />
+              </span>
+            </a>
+          );
+        })
+      }
+    </div>
+  </section>
+
+  <!-- ── Lo nuevo ────────────────────────────────────────────────────── -->
+  {
+    novedades.length ? (
+      <section class="bloque">
+        <div class="contenedor titulo-fila revela">
+          <h2 class="display">Lo nuevo</h2>
+          <div class="flechas">
+            <button type="button" class="flecha" data-desliza="-1" aria-label="Anteriores">
+              <Icono nombre="flecha" tam={18} clase="izquierda" />
+            </button>
+            <button type="button" class="flecha" data-desliza="1" aria-label="Siguientes">
+              <Icono nombre="flecha" tam={18} />
+            </button>
+          </div>
+        </div>
+        <div class="carrusel" data-carrusel>
+          {novedades.map((p, i) => (
+            <div class="carrusel-item">
+              <Tarjeta producto={p} indice={i} />
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null
+  }
+
+  <!-- ── Ventajas ────────────────────────────────────────────────────── -->
+  <section class="contenedor bloque">
+    <div class="ventajas">
+      {
+        ventajas.map((v, i) => (
+          <div class="ventaja revela" style={`--retraso:${i * 70}ms`}>
+            <span class="ventaja-icono">
+              <Icono nombre={v.icono} />
+            </span>
             <strong>{v.titulo}</strong>
             <span>{v.texto}</span>
           </div>
-        </div>
-      ))
-    }
+        ))
+      }
+    </div>
   </section>
 
+  <!-- ── Catálogo ────────────────────────────────────────────────────── -->
   <section id="catalogo" class="contenedor bloque">
-    <div class="bloque-cabeza">
+    <div class="titulo-fila catalogo-cabeza revela">
       <h2 class="display">Catálogo</h2>
       <div class="filtros" role="group" aria-label="Filtrar por categoría">
         <button type="button" class="filtro" data-filtro="" aria-pressed="true">Todo</button>
@@ -79,37 +176,53 @@ const preguntas = [
       </div>
     </div>
     <div class="rejilla" data-rejilla>
-      {catalogo.map((p) => <Tarjeta producto={p} />)}
+      {catalogo.map((p, i) => <Tarjeta producto={p} transicion indice={i} />)}
     </div>
   </section>
 
+  <!-- ── Franja editorial ────────────────────────────────────────────── -->
+  <section class="contenedor bloque">
+    <div class="editorial grano revela">
+      <div>
+        <p class="pildora pildora--oscura">Asesoría gratis</p>
+        <h2 class="display">¿Dudas con tu talla?</h2>
+        <p>Escríbenos tu altura y tu peso y te decimos cuál pedir. Si aun así no te queda, te la cambiamos.</p>
+      </div>
+      <a class="boton boton--acento" href={whatsappTallas} target={TIENDA.whatsapp ? '_blank' : undefined} rel="noopener">
+        <Icono nombre="whatsapp" tam={20} /> Pregúntanos
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Cómo comprar ────────────────────────────────────────────────── -->
   <section id="como-comprar" class="contenedor bloque">
-    <h2 class="display">Cómo comprar</h2>
+    <h2 class="display revela">Cómo comprar</h2>
     <ol class="pasos">
-      <li>
-        <span class="paso-num display">1</span>
+      <li class="revela">
+        <span class="paso-num display">01</span>
         <strong>Elige</strong>
         <span>Tu prenda, tu talla y tu color.</span>
       </li>
-      <li>
-        <span class="paso-num display">2</span>
+      <li class="revela" style="--retraso:80ms">
+        <span class="paso-num display">02</span>
         <strong>Pide por WhatsApp</strong>
         <span>Tu pedido se escribe solo. Lo envías y te lo confirmamos.</span>
       </li>
-      <li>
-        <span class="paso-num display">3</span>
+      <li class="revela" style="--retraso:160ms">
+        <span class="paso-num display">03</span>
         <strong>Recibe y paga</strong>
         <span>Te llega a casa y pagas al recibir.</span>
       </li>
     </ol>
   </section>
 
+  <!-- ── Preguntas ───────────────────────────────────────────────────── -->
   <section class="contenedor bloque">
-    <h2 class="display">Preguntas frecuentes</h2>
+    <h2 class="display revela">Preguntas frecuentes</h2>
     <div class="faq">
       {
         preguntas.map((q) => (
-          <details>
+          <details class="revela">
             <summary>{q.p}</summary>
             <p>{q.r}</p>
           </details>
@@ -129,7 +242,11 @@ const preguntas = [
 
   function filtra(categoria: string) {
     botones.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filtro === categoria)));
-    tarjetas.forEach((t) => (t.hidden = !!categoria && t.dataset.categoria !== categoria));
+    tarjetas.forEach((t) => {
+      t.hidden = !!categoria && t.dataset.categoria !== categoria;
+      // Al filtrar se ven ya, sin esperar a la animación de bajar.
+      t.classList.add('visible');
+    });
     const url = new URL(location.href);
     if (categoria) url.searchParams.set('c', categoria);
     else url.searchParams.delete('c');
@@ -137,47 +254,119 @@ const preguntas = [
   }
 
   botones.forEach((b) => b.addEventListener('click', () => filtra(b.dataset.filtro ?? '')));
+
+  // Las fichas de "Compra por estilo" filtran sin recargar la página.
+  document.querySelectorAll<HTMLAnchorElement>('[data-ir-categoria]').forEach((a) =>
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      filtra(a.dataset.irCategoria ?? '');
+      document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+    }),
+  );
+
   const inicial = new URL(location.href).searchParams.get('c');
   if (inicial && [...botones].some((b) => b.dataset.filtro === inicial)) filtra(inicial);
+
+  // Flechas del carrusel: avanzan una pantalla.
+  const carrusel = document.querySelector<HTMLElement>('[data-carrusel]');
+  document.querySelectorAll<HTMLButtonElement>('[data-desliza]').forEach((b) =>
+    b.addEventListener('click', () => {
+      if (!carrusel) return;
+      carrusel.scrollBy({ left: Number(b.dataset.desliza) * carrusel.clientWidth * 0.8, behavior: 'smooth' });
+    }),
+  );
 </script>
 
 <style>
+  /* ── Portada ── */
   .hero {
     background:
-      radial-gradient(120% 90% at 85% 10%, rgb(201 162 39 / 0.28), transparent 55%),
-      linear-gradient(180deg, #111 0%, #1b1b1b 100%);
+      radial-gradient(90% 80% at 90% 0%, rgb(201 162 39 / 0.32), transparent 60%),
+      radial-gradient(60% 60% at 0% 100%, rgb(201 162 39 / 0.12), transparent 60%),
+      #0f0f10;
     color: #fff;
-    padding: 64px 0 72px;
+    overflow: hidden;
   }
   .hero-dentro {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+    display: grid;
+    gap: 40px;
+    padding-top: 56px;
+    padding-bottom: 64px;
   }
-  .hero-pre {
-    margin: 0;
-    color: var(--acento);
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .hero h1 {
-    font-size: clamp(52px, 13vw, 120px);
-    max-width: 10ch;
-    line-height: 0.95;
+  @media (min-width: 960px) {
+    .hero-dentro {
+      grid-template-columns: 1.05fr 1fr;
+      align-items: center;
+      min-height: min(78vh, 720px);
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
   }
   .hero-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: sube 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .pildora {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
     margin: 0;
-    max-width: 46ch;
-    color: rgb(255 255 255 / 0.75);
+    padding: 7px 14px;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.85);
+  }
+  .pildora--oscura {
+    border-color: rgb(255 255 255 / 0.2);
+  }
+  .punto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--acento);
+    box-shadow: 0 0 0 0 rgb(201 162 39 / 0.6);
+    animation: late 2s infinite;
+  }
+  @keyframes late {
+    70% {
+      box-shadow: 0 0 0 10px rgb(201 162 39 / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(201 162 39 / 0);
+    }
+  }
+  .hero h1 {
+    font-size: clamp(58px, 14vw, 132px);
+    line-height: 0.9;
+    max-width: 9ch;
+  }
+  @media (min-width: 960px) {
+    /* En dos columnas, que el titular no invada las fotos. */
+    .hero h1 {
+      font-size: clamp(72px, 7.2vw, 108px);
+    }
+  }
+  .dorado {
+    color: var(--acento);
+  }
+  .hero-sub {
+    margin: 0;
+    max-width: 44ch;
+    color: rgb(255 255 255 / 0.72);
     font-size: 17px;
   }
   .hero-botones {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 8px;
+    margin-top: 4px;
   }
   .boton--acento {
     background: var(--acento);
@@ -186,65 +375,308 @@ const preguntas = [
   }
   .boton--borde {
     background: transparent;
-    border-color: rgb(255 255 255 / 0.35);
+    border-color: rgb(255 255 255 / 0.3);
+  }
+  @keyframes sube {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
   }
 
+  .collage {
+    position: relative;
+    height: 380px;
+  }
+  @media (min-width: 960px) {
+    .collage {
+      height: 560px;
+    }
+  }
+  .pieza {
+    position: absolute;
+    width: 46%;
+    aspect-ratio: 4 / 5;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgb(0 0 0 / 0.45);
+    animation:
+      aparece 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+      flota 7s ease-in-out infinite;
+  }
+  .pieza img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pieza-1 {
+    left: 0;
+    top: 12%;
+    --giro: -7deg;
+    animation-delay: 0.15s, 0s;
+  }
+  .pieza-2 {
+    left: 27%;
+    top: 0;
+    z-index: 2;
+    --giro: 2deg;
+    animation-delay: 0.3s, -2.3s;
+  }
+  .pieza-3 {
+    right: 0;
+    top: 18%;
+    --giro: 8deg;
+    animation-delay: 0.45s, -4.6s;
+  }
+  .pieza-precio {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgb(15 15 16 / 0.85);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  @keyframes aparece {
+    from {
+      opacity: 0;
+      transform: translateY(60px) rotate(0deg);
+    }
+  }
+  @keyframes flota {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--giro));
+    }
+    50% {
+      transform: translateY(-14px) rotate(var(--giro));
+    }
+  }
+
+  /* ── Cinta ── */
+  .cinta {
+    overflow: hidden;
+    background: var(--acento);
+    color: var(--tinta);
+    border-block: 2px solid var(--tinta);
+  }
+  .cinta-pista {
+    display: flex;
+    width: max-content;
+    animation: corre 28s linear infinite;
+  }
+  .cinta-grupo {
+    display: flex;
+  }
+  .cinta span {
+    padding: 14px 18px;
+    font-family: var(--display);
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .cinta b {
+    margin-left: 18px;
+    font-weight: 400;
+  }
+  @keyframes corre {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ── Bloques ── */
+  .bloque {
+    margin-top: 72px;
+  }
+  .bloque h2 {
+    font-size: clamp(36px, 7vw, 60px);
+  }
+  .titulo-fila {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  /* ── Estilos ── */
+  .estilos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (min-width: 900px) {
+    .estilos {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+  }
+  .estilo {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radio);
+    overflow: hidden;
+    color: #fff;
+    text-decoration: none;
+    background: #ddd;
+  }
+  .estilo:first-child {
+    grid-column: span 2;
+    aspect-ratio: 16 / 10;
+  }
+  @media (min-width: 900px) {
+    .estilo:first-child {
+      grid-column: auto;
+      aspect-ratio: 3 / 4;
+    }
+  }
+  .estilo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .estilo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 45%, rgb(0 0 0 / 0.65));
+  }
+  .estilo-nombre {
+    position: absolute;
+    left: 14px;
+    right: 56px;
+    bottom: 12px;
+    z-index: 1;
+    font-size: clamp(21px, 5.4vw, 30px);
+    line-height: 1;
+  }
+  .estilo-flecha {
+    position: absolute;
+    right: 12px;
+    bottom: 14px;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--tinta);
+    transition: transform 0.3s ease;
+  }
+  @media (hover: hover) {
+    .estilo:hover img {
+      transform: scale(1.07);
+    }
+    .estilo:hover .estilo-flecha {
+      transform: translateX(3px);
+    }
+  }
+
+  /* ── Carrusel ── */
+  .flechas {
+    display: none;
+    gap: 8px;
+  }
+  @media (min-width: 768px) {
+    .flechas {
+      display: flex;
+    }
+  }
+  .flecha {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+    background: var(--carta);
+  }
+  .flecha:hover {
+    background: var(--tinta);
+    color: #fff;
+  }
+  .flecha :global(.izquierda) {
+    transform: rotate(180deg);
+  }
+  .carrusel {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 16px;
+    padding: 0 16px 8px;
+    scrollbar-width: none;
+  }
+  .carrusel::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .carrusel {
+      padding-inline: max(32px, calc((100vw - var(--ancho)) / 2 + 32px));
+      scroll-padding: 0 max(32px, calc((100vw - var(--ancho)) / 2 + 32px));
+      gap: 20px;
+    }
+  }
+  .carrusel-item {
+    flex: none;
+    width: 62vw;
+    max-width: 300px;
+    scroll-snap-align: start;
+  }
+
+  /* ── Ventajas ── */
   .ventajas {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin-top: -28px;
   }
   @media (min-width: 900px) {
     .ventajas {
       grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
     }
   }
   .ventaja {
     display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 14px;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px;
     border-radius: var(--radio);
     background: var(--carta);
-    box-shadow: var(--sombra);
-  }
-  .ventaja-icono {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: var(--acento-suave);
-  }
-  .ventaja div {
-    display: flex;
-    flex-direction: column;
     font-size: 13px;
     line-height: 1.35;
+  }
+  .ventaja strong {
+    font-size: 14px;
+    margin-top: 8px;
   }
   .ventaja span:not(.ventaja-icono) {
     color: var(--tinta-2);
   }
+  .ventaja-icono {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: var(--acento-suave);
+  }
 
-  .bloque {
-    margin-top: 64px;
-  }
-  .bloque h2 {
-    font-size: clamp(34px, 7vw, 52px);
-  }
-  .bloque-cabeza {
-    display: flex;
+  /* ── Catálogo ── */
+  .catalogo-cabeza {
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
+    align-items: stretch;
   }
   @media (min-width: 900px) {
-    .bloque-cabeza {
+    .catalogo-cabeza {
       flex-direction: row;
       align-items: flex-end;
-      justify-content: space-between;
     }
   }
   .filtros {
@@ -263,13 +695,16 @@ const preguntas = [
   }
   .filtro {
     flex: none;
-    height: 40px;
-    padding: 0 16px;
+    height: 42px;
+    padding: 0 18px;
     border: 1px solid var(--borde);
     border-radius: 999px;
     background: var(--carta);
     font-weight: 600;
     font-size: 14px;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
   }
   .filtro[aria-pressed='true'] {
     background: var(--tinta);
@@ -279,12 +714,12 @@ const preguntas = [
   .rejilla {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px 12px;
+    gap: 28px 12px;
   }
   @media (min-width: 768px) {
     .rejilla {
       grid-template-columns: repeat(3, 1fr);
-      gap: 32px 20px;
+      gap: 36px 20px;
     }
   }
   @media (min-width: 1100px) {
@@ -293,6 +728,41 @@ const preguntas = [
     }
   }
 
+  /* ── Editorial ── */
+  .editorial {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 36px 24px;
+    border-radius: 24px;
+    background:
+      radial-gradient(80% 120% at 100% 0%, rgb(201 162 39 / 0.35), transparent 60%),
+      #121213;
+    color: #fff;
+    overflow: hidden;
+  }
+  @media (min-width: 900px) {
+    .editorial {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 48px 56px;
+    }
+  }
+  .editorial h2 {
+    margin-top: 14px;
+  }
+  .editorial p:not(.pildora) {
+    margin: 10px 0 0;
+    max-width: 48ch;
+    color: rgb(255 255 255 / 0.7);
+  }
+  .editorial .boton {
+    flex: none;
+    align-self: flex-start;
+  }
+
+  /* ── Pasos ── */
   .pasos {
     list-style: none;
     margin: 24px 0 0;
@@ -309,20 +779,23 @@ const preguntas = [
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 20px;
+    padding: 22px;
     border-radius: var(--radio);
     background: var(--carta);
   }
   .paso-num {
-    font-size: 40px;
-    color: var(--acento);
+    font-size: 44px;
     line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--tinta);
+    margin-bottom: 6px;
   }
   .pasos span:not(.paso-num) {
     color: var(--tinta-2);
     font-size: 14px;
   }
 
+  /* ── Preguntas ── */
   .faq {
     display: flex;
     flex-direction: column;
@@ -332,7 +805,7 @@ const preguntas = [
   details {
     border-radius: var(--radio);
     background: var(--carta);
-    padding: 0 18px;
+    padding: 0 20px;
   }
   summary {
     cursor: pointer;
@@ -351,9 +824,10 @@ const preguntas = [
     font-size: 22px;
     line-height: 1;
     color: var(--tinta-3);
+    transition: transform 0.25s ease;
   }
   details[open] summary::after {
-    content: '−';
+    transform: rotate(45deg);
   }
   details p {
     margin: 0 0 18px;

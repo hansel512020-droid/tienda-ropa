@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Icono from '../../components/Icono.astro';
 import Tarjeta from '../../components/Tarjeta.astro';
 import { TIENDA } from '../../config';
-import { PRODUCTOS, precio, type Producto } from '../../productos';
+import { PRODUCTOS, precio, transicion, type Producto } from '../../productos';
 
 export function getStaticPaths() {
   return PRODUCTOS.map((producto) => ({ params: { slug: producto.slug }, props: { producto } }));
@@ -34,7 +34,18 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     <div class="ficha">
       <div class="galeria">
         <div class="fotos" data-fotos>
-          {p.fotos.map((f, i) => <img src={f} alt={`${p.nombre}, foto ${i + 1}`} width="800" height="1000" />)}
+          {
+            p.fotos.map((f, i) => (
+              <img
+                src={f}
+                alt={`${p.nombre}, foto ${i + 1}`}
+                width="800"
+                height="1000"
+                data-foto={f}
+                style={i === 0 ? `view-transition-name:${transicion(p.slug)}` : undefined}
+              />
+            ))
+          }
         </div>
         {
           p.fotos.length > 1 ? (
@@ -70,7 +81,7 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
               <div class="colores">
                 {p.colores.map((c, i) => (
                   <label class="color" title={c.nombre}>
-                    <input type="radio" name="color" value={c.nombre} checked={unColor && i === 0} />
+                    <input type="radio" name="color" value={c.nombre} checked={unColor && i === 0} data-foto={c.foto} />
                     <span style={`background:${c.hex}`} />
                     <span class="sr">{c.nombre}</span>
                   </label>
@@ -131,11 +142,22 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
               <button class="boton boton--claro boton--ancho" type="button" data-accion="anadir">
                 <Icono nombre="bolsa" tam={18} /> Añadir al carrito
               </button>
-              <p class="anadido" data-anadido hidden>
-                Añadido al carrito ✓
-              </p>
             </div>
           )
+        }
+
+        {
+          !p.agotado ? (
+            <div class="barra" data-barra aria-hidden="true">
+              <div>
+                <strong>{p.nombre}</strong>
+                <span class="precio">{precio(p.precio)}</span>
+              </div>
+              <button class="boton" type="button" data-accion="comprar" tabindex="-1">
+                Comprar
+              </button>
+            </div>
+          ) : null
         }
 
         <ul class="garantias">
@@ -168,18 +190,27 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
 </Base>
 
 <script>
-  import { abreCarrito, anade } from '../../scripts/carrito';
+  import { abreCarrito, anade, avisa } from '../../scripts/carrito';
 
   const info = document.querySelector<HTMLElement>('[data-producto]')!;
   const producto = JSON.parse(info.dataset.producto!);
   const error = document.querySelector<HTMLElement>('[data-error-ficha]')!;
-  const anadido = document.querySelector<HTMLElement>('[data-anadido]');
   const hayColores = !!info.querySelector('input[name="color"]');
 
-  // El nombre del color elegido, al lado de "Color:".
+  const fotos = document.querySelector<HTMLElement>('[data-fotos]');
+
+  /** Lleva la galería a la foto `i`. */
+  function irAFoto(i: number) {
+    fotos?.scrollTo({ left: fotos.clientWidth * i, behavior: 'smooth' });
+  }
+
+  // Al elegir un color: su nombre al lado de "Color:" y, si tiene foto, la galería va a ella.
   info.querySelectorAll<HTMLInputElement>('input[name="color"]').forEach((r) =>
     r.addEventListener('change', () => {
       info.querySelector('[data-color-elegido]')!.textContent = r.value;
+      const imagenes = [...(fotos?.querySelectorAll<HTMLImageElement>('img') ?? [])];
+      const i = imagenes.findIndex((img) => img.dataset.foto === r.dataset.foto);
+      if (r.dataset.foto && i >= 0) irAFoto(i);
     }),
   );
   info.addEventListener('change', () => (error.hidden = true));
@@ -199,23 +230,27 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     b.addEventListener('click', () => {
       const e = eleccion();
       if (!e) return;
-      anade({ ...producto, ...e, cantidad: 1 });
+      // En el carrito sale la foto del color elegido, si la tiene.
+      const fotoColor = info.querySelector<HTMLInputElement>('input[name="color"]:checked')?.dataset.foto;
+      anade({ ...producto, ...(fotoColor ? { foto: fotoColor } : {}), ...e, cantidad: 1 });
       if (b.dataset.accion === 'comprar') abreCarrito();
-      else if (anadido) {
-        anadido.hidden = false;
-        setTimeout(() => (anadido.hidden = true), 2500);
-      }
+      else avisa(`Añadido: ${producto.nombre} · Talla ${e.talla} ✓`);
     }),
   );
 
   // Miniaturas: llevan a esa foto en la galería deslizable.
-  const fotos = document.querySelector<HTMLElement>('[data-fotos]');
   document.querySelectorAll<HTMLButtonElement>('[data-ir]').forEach((b) =>
-    b.addEventListener('click', () => {
-      const i = Number(b.dataset.ir);
-      fotos?.scrollTo({ left: fotos.clientWidth * i, behavior: 'smooth' });
-    }),
+    b.addEventListener('click', () => irAFoto(Number(b.dataset.ir))),
   );
+
+  // La barra de abajo sale en el móvil cuando los botones principales ya no se ven.
+  const barra = document.querySelector<HTMLElement>('[data-barra]');
+  const acciones = document.querySelector('.acciones');
+  if (barra && acciones) {
+    new IntersectionObserver(([e]) => barra.classList.toggle('visible', !e.isIntersecting && e.boundingClientRect.top < 0)).observe(
+      acciones,
+    );
+  }
 </script>
 
 <style>
@@ -412,8 +447,7 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     font-weight: 600;
     font-size: 14px;
   }
-  .error[hidden],
-  .anadido[hidden] {
+  .error[hidden] {
     display: none;
   }
   .acciones {
@@ -421,12 +455,55 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     flex-direction: column;
     gap: 10px;
   }
-  .anadido {
-    margin: 0;
-    text-align: center;
-    color: var(--verde);
-    font-weight: 700;
-    font-size: 14px;
+  .barra {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: rgb(255 255 255 / 0.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--borde);
+    transform: translateY(110%);
+    transition: transform 0.3s ease;
+  }
+  .barra:global(.visible) {
+    transform: none;
+  }
+  .barra div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    font-size: 13px;
+  }
+  .barra strong {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .barra .boton {
+    min-height: 46px;
+    padding: 0 22px;
+  }
+  @media (min-width: 900px) {
+    .barra {
+      display: none;
+    }
+  }
+  /* Con la barra fuera, el botón de WhatsApp sube para no taparla. */
+  :global(body:has(.barra.visible) .flotante) {
+    transform: translateY(-74px);
+    transition: transform 0.3s ease;
+  }
+  /* Con la barra fuera, el botón de WhatsApp sube para no taparla. */
+  :global(body:has(.barra.visible) .flotante) {
+    transform: translateY(-74px);
+    transition: transform 0.3s ease;
   }
   .garantias {
     list-style: none;

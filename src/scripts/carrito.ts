@@ -50,6 +50,23 @@ export function anade(nueva: Linea) {
   if (existente) existente.cantidad = Math.min(existente.cantidad + nueva.cantidad, 20);
   else lineas.push(nueva);
   guarda(lineas);
+  // El contador da un saltito: se ve que algo entró en la bolsa.
+  const contador = $<HTMLElement>('[data-contador]');
+  contador?.classList.remove('salta');
+  void contador?.offsetWidth;
+  contador?.classList.add('salta');
+}
+
+let reloj: ReturnType<typeof setTimeout> | undefined;
+
+/** Un aviso corto abajo, que se va solo. */
+export function avisa(texto: string) {
+  const brindis = $<HTMLElement>('[data-brindis]');
+  if (!brindis) return;
+  brindis.textContent = texto;
+  brindis.classList.add('visible');
+  clearTimeout(reloj);
+  reloj = setTimeout(() => brindis.classList.remove('visible'), 2400);
 }
 
 function cambia(i: number, delta: number) {
