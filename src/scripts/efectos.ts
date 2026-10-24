@@ -15,3 +15,13 @@ const observador = new IntersectionObserver(
 );
 
 document.querySelectorAll('.revela').forEach((el) => observador.observe(el));
+
+/*
+ * La portada y las cintas se animan sin parar. Fuera de la pantalla no las ve
+ * nadie, pero el celular las seguía moviendo mientras bajabas por el
+ * catálogo: se pausan hasta que vuelven a verse.
+ */
+const vigia = new IntersectionObserver((entradas) => {
+  for (const e of entradas) e.target.classList.toggle('dormida', !e.isIntersecting);
+});
+document.querySelectorAll('[data-anima]').forEach((el) => vigia.observe(el));

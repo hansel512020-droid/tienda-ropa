@@ -54,7 +54,7 @@ const ambiente = TIENDA.ambiente;
 
 <Base>
   <!-- ── Portada ─────────────────────────────────────────────────────── -->
-  <section class="hero" data-hero>
+  <section class="hero" data-hero data-anima>
     {ambiente[0] ? <img class="hero-foto" src={ambiente[0]} alt="" /> : null}
 
     <div class="hero-marca display" aria-label={TIENDA.nombre}>
@@ -102,7 +102,7 @@ const ambiente = TIENDA.ambiente;
   </section>
 
   <!-- ── Cintas cruzadas ─────────────────────────────────────────────── -->
-  <div class="cintas" aria-label={cinta.join(' · ')}>
+  <div class="cintas" aria-label={cinta.join(' · ')} data-anima>
     {
       ['negra', 'blanca'].map((tipo) => (
         <div class={`cinta cinta-${tipo}`} aria-hidden="true">
@@ -460,9 +460,19 @@ const ambiente = TIENDA.ambiente;
     perspective: 900px;
     animation: entra-prenda 1.1s 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
+  /* Sombra en el suelo, quieta mientras la prenda flota: más barata que un filtro. */
+  .hero-prenda::after {
+    content: '';
+    position: absolute;
+    left: 18%;
+    right: 18%;
+    bottom: -6%;
+    height: 9%;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.32), transparent);
+  }
   .hero-prenda img {
     width: 100%;
-    filter: drop-shadow(0 40px 36px rgb(0 0 0 / 0.35));
     transform: rotateX(var(--rx)) rotateY(var(--ry));
     transition: transform 0.25s ease-out;
     animation: flota 6s ease-in-out infinite;

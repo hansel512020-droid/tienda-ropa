@@ -3,6 +3,9 @@ import '../styles/global.css';
 import Icono from '../components/Icono.astro';
 import { TIENDA } from '../config';
 import { hayEjemplos } from '../productos';
+// Las dos letras de la marca, pedidas desde el principio (ver el <head>).
+import letraTitulos from '@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2?url';
+import letraTexto from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url';
 
 interface Props {
   titulo?: string;
@@ -28,6 +31,14 @@ const whatsapp = TIENDA.whatsapp
     <meta name="description" content={descripcion} />
     <link rel="canonical" href={canonica} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!--
+      Las letras se piden en cuanto llega la página, no cuando el CSS las
+      descubre. Si llegan tarde, el nombre gigante de la portada se pinta
+      primero con otra letra y luego salta de tamaño: eso era lo que hacía
+      sentir pesada la primera carga.
+    -->
+    <link rel="preload" href={letraTitulos} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={letraTexto} as="font" type="font/woff2" crossorigin />
     <meta name="theme-color" content="#0b0b0c" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={TIENDA.nombre} />
@@ -183,8 +194,7 @@ const whatsapp = TIENDA.whatsapp
     position: sticky;
     top: 0;
     z-index: 20;
-    background: rgb(11 11 11 / 0.86);
-    backdrop-filter: blur(14px) saturate(140%);
+    background: rgb(11 11 11 / 0.97);
     border-bottom: 2px solid #000;
   }
   .fila {
@@ -372,8 +382,7 @@ const whatsapp = TIENDA.whatsapp
     animation: entra 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .carrito::backdrop {
-    background: rgb(0 0 0 / 0.65);
-    backdrop-filter: blur(3px);
+    background: rgb(0 0 0 / 0.72);
   }
   @keyframes entra {
     from {
