@@ -8,53 +8,56 @@ interface Props {
    * por página: dos con el mismo nombre de transición la anulan.
    */
   transicion?: boolean;
-  /** Posición en la lista, para que aparezcan escalonadas. */
+  /** Posición en la lista: da el número grande y el escalonado al aparecer. */
   indice?: number;
 }
 const { producto: p, transicion = false, indice = 0 } = Astro.props;
 const descuento = p.antes ? Math.round((1 - p.precio / p.antes) * 100) : 0;
 const segunda = p.fotos[1];
+const numero = String(indice + 1).padStart(2, '0');
 ---
 
 <a
-  class="tarjeta revela"
+  class:list={['tarjeta', 'revela', { agotada: p.agotado }]}
   href={`/producto/${p.slug}`}
   data-categoria={p.categoria}
-  style={`--retraso:${(indice % 4) * 70}ms`}
+  style={`--fondo:${p.fondo};--retraso:${(indice % 4) * 80}ms`}
 >
-  <div class="foto">
+  <div class="escenario">
+    <span class="numero display" aria-hidden="true">{numero}</span>
     <img
+      class="prenda"
       src={p.fotos[0]}
       alt={p.nombre}
       loading="lazy"
-      width="800"
-      height="1000"
+      width="600"
+      height="760"
       style={transicion ? `view-transition-name:${nombreTransicion(p.slug)}` : undefined}
     />
-    {segunda ? <img class="segunda" src={segunda} alt="" loading="lazy" width="800" height="1000" /> : null}
+    {segunda ? <img class="prenda segunda" src={segunda} alt="" loading="lazy" width="600" height="760" /> : null}
     <div class="etiquetas">
       {p.agotado ? <span class="etiqueta etiqueta--claro">Agotado</span> : null}
       {!p.agotado && descuento > 0 ? <span class="etiqueta etiqueta--rojo">-{descuento}%</span> : null}
-      {!p.agotado && p.nuevo ? <span class="etiqueta etiqueta--acento">Nuevo</span> : null}
+      {!p.agotado && p.nuevo ? <span class="etiqueta">Nuevo</span> : null}
       {p.ejemplo ? <span class="etiqueta etiqueta--claro">Ejemplo</span> : null}
     </div>
-    {
-      p.colores && p.colores.length > 1 ? (
-        <div class="colores" aria-label={`${p.colores.length} colores`}>
-          {p.colores.map((c) => (
-            <span style={`background:${c.hex}`} title={c.nombre} />
-          ))}
-        </div>
-      ) : null
-    }
-    {!p.agotado ? <span class="ver">Ver prenda</span> : null}
+    <span class="pegatina precio-pegatina">{precio(p.precio)}</span>
   </div>
   <div class="texto">
-    <span class="categoria">{p.categoria}</span>
-    <h3>{p.nombre}</h3>
-    <span class="precio">
-      {precio(p.precio)}{p.antes ? <s>{precio(p.antes)}</s> : null}
-    </span>
+    <div class="texto-arriba">
+      <span class="rotulo categoria">{p.categoria}</span>
+      {
+        p.colores && p.colores.length > 1 ? (
+          <span class="colores" aria-label={`${p.colores.length} colores`}>
+            {p.colores.map((c) => (
+              <span style={`background:${c.hex}`} title={c.nombre} />
+            ))}
+          </span>
+        ) : null
+      }
+    </div>
+    <h3 class="display">{p.nombre}</h3>
+    {p.antes ? <span class="antes">Antes <s>{precio(p.antes)}</s></span> : null}
   </div>
 </a>
 
@@ -65,124 +68,117 @@ const segunda = p.fotos[1];
     gap: 14px;
     text-decoration: none;
   }
-  .foto {
+  .escenario {
     position: relative;
     aspect-ratio: 4 / 5;
     border-radius: var(--radio);
     overflow: hidden;
-    background: #18181a;
-    outline: 1px solid rgb(255 255 255 / 0.05);
-    outline-offset: -1px;
+    background:
+      radial-gradient(80% 60% at 50% 40%, rgb(255 255 255 / 0.35), transparent 70%),
+      var(--fondo);
+    isolation: isolate;
   }
-  .foto img {
+  .agotada .escenario {
+    filter: grayscale(1) brightness(0.7);
+  }
+  .numero {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    right: -4px;
+    top: -10px;
+    z-index: -1;
+    font-size: clamp(70px, 14vw, 120px);
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 2px rgb(0 0 0 / 0.25);
+  }
+  .prenda {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 78%;
+    height: 78%;
+    object-fit: contain;
+    translate: -50% -46%;
+    filter: drop-shadow(0 26px 22px rgb(0 0 0 / 0.35));
     transition:
-      transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
-      opacity 0.5s ease;
+      transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 0.4s ease;
   }
   .segunda {
     opacity: 0;
   }
-  /* Un filo dorado aparece alrededor al pasar el ratón. */
-  .foto::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: inset 0 0 0 1px rgb(214 178 58 / 0);
-    transition: box-shadow 0.3s ease;
-    pointer-events: none;
-  }
   @media (hover: hover) {
-    .tarjeta:hover .foto img {
-      transform: scale(1.06);
+    .tarjeta:hover .prenda {
+      transform: translateY(-10px) rotate(-4deg) scale(1.06);
     }
     .tarjeta:hover .segunda {
       opacity: 1;
     }
-    .tarjeta:hover .ver {
-      opacity: 1;
-      transform: none;
+    /* Solo si hay otra foto a la que cambiar. */
+    .tarjeta:has(.segunda):hover .prenda:not(.segunda) {
+      opacity: 0;
     }
-    .tarjeta:hover .foto::after {
-      box-shadow: inset 0 0 0 1px rgb(214 178 58 / 0.7);
+    .tarjeta:hover .precio-pegatina {
+      rotate: 4deg;
+      scale: 1.08;
     }
   }
   .etiquetas {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 12px;
+    left: 12px;
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
     z-index: 1;
   }
-  .colores {
+  .precio-pegatina {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
+    left: 12px;
+    bottom: 14px;
     z-index: 1;
-    display: flex;
-    gap: 5px;
-    padding: 6px 8px;
-    border-radius: 999px;
-    background: rgb(11 11 12 / 0.7);
-    backdrop-filter: blur(6px);
-  }
-  .colores span {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    border: 1px solid rgb(255 255 255 / 0.25);
-  }
-  .ver {
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    z-index: 1;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: var(--acento);
-    color: #0b0b0c;
-    font-family: var(--ancha);
-    font-stretch: 118%;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    opacity: 0;
-    transform: translateY(8px);
+    --giro: -5deg;
+    font-size: 13px;
+    padding: 7px 12px;
     transition:
-      opacity 0.3s ease,
-      transform 0.3s ease;
+      rotate 0.3s ease,
+      scale 0.3s ease;
   }
   .texto {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 0 2px;
+    gap: 6px;
+    padding: 0 4px;
+  }
+  .texto-arriba {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
   }
   .categoria {
-    font-family: var(--ancha);
-    font-stretch: 125%;
-    font-size: 10px;
     color: var(--tinta-3);
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    font-weight: 700;
+    font-size: 10px;
+  }
+  .colores {
+    display: flex;
+    gap: 4px;
+  }
+  .colores span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1.5px solid rgb(255 255 255 / 0.5);
   }
   h3 {
-    font-size: 15px;
-    font-weight: 600;
-    line-height: 1.3;
-    color: var(--tinta);
+    font-size: clamp(13px, 3.4vw, 16px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
   }
-  .precio {
-    font-size: 15px;
+  .antes {
+    font-size: 13px;
+    color: var(--tinta-3);
   }
   .tarjeta[hidden] {
     display: none;

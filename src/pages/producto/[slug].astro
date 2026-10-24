@@ -32,7 +32,7 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     </nav>
 
     <div class="ficha">
-      <div class="galeria">
+      <div class="galeria" style={`--fondo:${p.fondo}`}>
         <div class="fotos" data-fotos>
           {
             p.fotos.map((f, i) => (
@@ -288,15 +288,19 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     border-radius: var(--radio);
-    background: #18181a;
-    border: 1px solid rgb(255 255 255 / 0.06);
+    background:
+      radial-gradient(70% 55% at 50% 42%, rgb(255 255 255 / 0.4), transparent 70%),
+      var(--fondo);
+    border: 2px solid #000;
     scrollbar-width: none;
   }
   .fotos img {
     flex: none;
     width: 100%;
     aspect-ratio: 4 / 5;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 9%;
+    filter: drop-shadow(0 30px 28px rgb(0 0 0 / 0.35));
     scroll-snap-align: start;
   }
   .miniaturas {
@@ -306,9 +310,9 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
   .miniaturas button {
     padding: 0;
     border: 1px solid var(--borde);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    background: #18181a;
+    background: var(--fondo);
     transition: border-color 0.2s ease;
   }
   .miniaturas button:hover {
@@ -317,7 +321,8 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
   .miniaturas img {
     width: 64px;
     height: 80px;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 6px;
   }
   .info {
     display: flex;
@@ -333,7 +338,8 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     display: none;
   }
   h1 {
-    font-size: clamp(36px, 8vw, 56px);
+    font-size: clamp(28px, 6.4vw, 48px);
+    line-height: 1.02;
   }
   .grande {
     margin: 0;
@@ -375,7 +381,7 @@ const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1px solid rgb(0 0 0 / 0.15);
+    border: 1.5px solid rgb(255 255 255 / 0.35);
     box-shadow: 0 0 0 3px var(--fondo);
     cursor: pointer;
   }

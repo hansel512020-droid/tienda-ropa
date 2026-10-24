@@ -1,33 +1,32 @@
-@import '@fontsource/anton/400.css';
-@import '@fontsource-variable/inter';
-@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/unbounded';
+@import '@fontsource-variable/space-grotesk';
 
 /*
- * Negro total: toda la tienda con el mismo estilo que la portada. Fondo casi
- * negro, texto claro y el dorado solo para lo que importa (precios, botones,
- * lo nuevo). Así nada desentona al bajar de la portada al catálogo.
+ * Blanco y negro puro: la ropa es lo único con color. Negro de base, blanco
+ * como acento y grises para los fondos de cada prenda (ver `fondo` en
+ * productos.ts) y los bloques que alternan.
  */
 :root {
   color-scheme: dark;
-  --fondo: #0b0b0c;
-  --fondo-2: #111113;
-  --carta: #161618;
-  --carta-2: #1d1d20;
-  --tinta: #f3f0e8;
-  --tinta-2: #b9b4aa;
-  --tinta-3: #7f7a71;
-  --borde: #2a2a2d;
-  --acento: #d6b23a;
-  --acento-2: #f0cf5b;
-  --acento-suave: rgb(214 178 58 / 0.12);
-  --rojo: #e2553c;
-  --verde: #3ccf7f;
-  --radio: 10px;
-  --ancho: 1240px;
-  --sombra: 0 20px 50px rgb(0 0 0 / 0.5);
-  --display: 'Anton', 'Impact', sans-serif;
-  --ancha: 'Archivo Variable', 'Inter Variable', system-ui, sans-serif;
-  --texto: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fondo: #0b0b0b;
+  --fondo-2: #141414;
+  --carta: #1a1a1a;
+  --tinta: #ffffff;
+  --tinta-2: #c4c4c4;
+  --tinta-3: #8a8a8a;
+  --borde: #2c2c2c;
+  --acento: #ffffff;
+  --negro: #000000;
+  --gris-1: #e8e8e6;
+  --gris-2: #cfcfcd;
+  /* Solo para los errores de un formulario: ahí el rojo ayuda a encontrarlos. */
+  --rojo: #ff5a4f;
+  --radio: 22px;
+  --ancho: 1280px;
+  --display: 'Unbounded Variable', 'Arial Black', sans-serif;
+  --texto: 'Space Grotesk Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Sombra dura de los botones: gris sobre negro; la portada blanca la pone negra. */
+  --sombra-boton: #6a6a6a;
 }
 
 *,
@@ -50,6 +49,7 @@ body {
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -76,23 +76,22 @@ h1,
 h2,
 h3 {
   margin: 0;
-  line-height: 1.05;
+  line-height: 1;
 }
 
 .display {
   font-family: var(--display);
-  font-weight: 400;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.02em;
 }
 
-/* Rótulos pequeños, anchos y espaciados: el toque de marca de lujo urbano. */
+/* Rótulos pequeños en mayúsculas. */
 .rotulo {
-  font-family: var(--ancha);
-  font-stretch: 125%;
+  font-family: var(--texto);
   font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: 12px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -112,112 +111,142 @@ h3 {
 /* ── Botones ─────────────────────────────────────────────────────────── */
 
 .boton {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 54px;
+  min-height: 56px;
   padding: 0 28px;
-  border: 1.5px solid var(--acento);
+  border: 2px solid #000;
   border-radius: 999px;
   background: var(--acento);
-  color: #0b0b0c;
-  font-family: var(--ancha);
-  font-stretch: 118%;
+  color: #000;
+  font-family: var(--display);
   font-weight: 800;
   font-size: 13px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   text-decoration: none;
+  box-shadow: 4px 4px 0 var(--sombra-boton);
   transition:
-    transform 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease;
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .boton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgb(214 178 58 / 0.25);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--sombra-boton);
 }
 
 .boton:active {
-  transform: translateY(1px);
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--sombra-boton);
 }
 
 .boton[disabled] {
-  opacity: 0.35;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.boton--claro,
-.boton--borde {
-  background: transparent;
-  color: var(--tinta);
-  border-color: rgb(243 240 232 / 0.35);
+.boton--blanco {
+  background: #fff;
 }
 
-.boton--claro:hover,
-.boton--borde:hover {
+.boton--negro {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+  box-shadow: 4px 4px 0 #9a9a9a;
+}
+
+.boton--negro:hover {
+  box-shadow: 6px 6px 0 #9a9a9a;
+}
+
+.boton--borde,
+.boton--claro {
+  background: transparent;
+  color: var(--tinta);
   border-color: var(--tinta);
   box-shadow: none;
 }
 
+.boton--borde:hover,
+.boton--claro:hover {
+  background: var(--tinta);
+  color: #000;
+  box-shadow: none;
+  transform: none;
+}
+
 .boton--whatsapp {
-  background: #25d366;
-  border-color: #25d366;
-  color: #04190c;
+  background: #fff;
+  color: #000;
 }
 
 .boton--ancho {
   width: 100%;
 }
 
-/* ── Etiquetas ───────────────────────────────────────────────────────── */
+/* ── Etiquetas y pegatinas ───────────────────────────────────────────── */
 
 .etiqueta {
   display: inline-block;
-  padding: 5px 9px;
-  border-radius: 4px;
-  font-family: var(--ancha);
-  font-stretch: 118%;
+  padding: 6px 10px;
+  border: 2px solid #000;
+  border-radius: 999px;
+  font-family: var(--display);
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: var(--tinta);
-  color: #0b0b0c;
+  background: #fff;
+  color: #000;
 }
 
 .etiqueta--acento {
   background: var(--acento);
-  color: #0b0b0c;
 }
 
 .etiqueta--rojo {
-  background: var(--rojo);
+  background: #000;
   color: #fff;
+  border-color: #fff;
 }
 
 .etiqueta--claro {
-  background: rgb(11 11 12 / 0.7);
-  color: var(--tinta-2);
-  border: 1px solid var(--borde);
-  backdrop-filter: blur(6px);
+  background: #000;
+  color: #fff;
+}
+
+/* Pegatina inclinada, como las que se pegan en una caja o una tabla. */
+.pegatina {
+  display: inline-block;
+  padding: 10px 16px;
+  border: 2px solid #000;
+  border-radius: 14px;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #000;
+  background: #fff;
+  box-shadow: 4px 4px 0 #000;
+  rotate: var(--giro, -6deg);
 }
 
 .precio {
+  font-family: var(--display);
   font-weight: 800;
-  color: var(--acento);
 }
 
 .precio s {
   color: var(--tinta-3);
   font-weight: 500;
-  margin-left: 6px;
+  margin-left: 8px;
+  font-size: 0.85em;
 }
 
 .sr {
@@ -230,7 +259,7 @@ h3 {
 }
 
 :focus-visible {
-  outline: 2px solid var(--acento);
+  outline: 3px solid var(--acento);
   outline-offset: 3px;
 }
 
@@ -248,21 +277,21 @@ h3 {
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.28s;
+  animation-duration: 0.3s;
 }
 
 ::view-transition-group(*) {
-  animation-duration: 0.4s;
-  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* Aparición al bajar. Sin JavaScript (sin la clase .js) todo se ve desde el principio. */
 .js .revela {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(40px) scale(0.98);
   transition:
-    opacity 0.8s ease,
-    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+    opacity 0.7s ease,
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   transition-delay: var(--retraso, 0ms);
 }
 
@@ -277,7 +306,7 @@ h3 {
     transform: scale(1);
   }
   40% {
-    transform: scale(1.35);
+    transform: scale(1.4);
   }
 }
 
@@ -285,21 +314,20 @@ h3 {
   animation: salta 0.45s ease;
 }
 
-/* Grano de película: les quita a los fondos oscuros el aspecto de color plano. */
-.grano {
-  position: relative;
-  isolation: isolate;
+@keyframes flota {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -14px;
+  }
 }
 
-.grano::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.22;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+@keyframes gira {
+  to {
+    rotate: 360deg;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

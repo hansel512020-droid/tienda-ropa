@@ -37,6 +37,14 @@ export const TIENDA = {
   pagos: ['Pago al recibir (contra entrega)', 'Transferencia bancaria'],
 
   cambios: 'Si la talla no te queda, te la cambiamos. Escríbenos dentro de los 5 días después de recibirla.',
+
+  /**
+   * Fotos de ambiente de la marca (gente con ropa urbana en la calle), para la
+   * portada y la sección tipo revista. Rutas dentro de `public/`, por ejemplo
+   * '/ambiente/1.jpg'. La primera, mejor horizontal, va de fondo en la
+   * portada. Sin fotos, esas secciones se arman solo con color y prendas.
+   */
+  ambiente: [] as string[],
 };
 
 export const CATEGORIAS = ['Hoodies', 'Camisetas', 'Pantalones', 'Conjuntos', 'Gorras'] as const;

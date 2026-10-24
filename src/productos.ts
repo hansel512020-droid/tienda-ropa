@@ -32,6 +32,12 @@ export interface Producto {
   antes?: number;
   /** Rutas dentro de `public/`. La primera es la de portada. */
   fotos: string[];
+  /**
+   * Color del fondo sobre el que flota la prenda en su tarjeta y en su ficha.
+   * Con fotos recortadas (sin fondo) es lo que le da vida; con fotos que ya
+   * traen su fondo, se ve solo en los bordes.
+   */
+  fondo: string;
   tallas: string[];
   colores?: Color[];
   descripcion: string;
@@ -50,6 +56,7 @@ export const PRODUCTOS: Producto[] = [
     precio: 29.99,
     antes: 34.99,
     fotos: ['/productos/hoodie-negro.svg', '/productos/hoodie-gris.svg', '/productos/hoodie-crema.svg'],
+    fondo: '#e6e6e4',
     tallas: ['S', 'M', 'L', 'XL'],
     colores: [
       { nombre: 'Negro', hex: '#1c1c1c', foto: '/productos/hoodie-negro.svg' },
@@ -67,6 +74,7 @@ export const PRODUCTOS: Producto[] = [
     categoria: 'Camisetas',
     precio: 14.99,
     fotos: ['/productos/camiseta-blanco.svg', '/productos/camiseta-negro.svg'],
+    fondo: '#2a2a2a',
     tallas: ['S', 'M', 'L', 'XL'],
     colores: [
       { nombre: 'Blanco', hex: '#f7f7f4', foto: '/productos/camiseta-blanco.svg' },
@@ -83,6 +91,7 @@ export const PRODUCTOS: Producto[] = [
     categoria: 'Pantalones',
     precio: 27.99,
     fotos: ['/productos/cargo-oliva.svg', '/productos/cargo-negro.svg'],
+    fondo: '#d9d9d7',
     tallas: ['28', '30', '32', '34', '36'],
     colores: [
       { nombre: 'Verde oliva', hex: '#5b6142', foto: '/productos/cargo-oliva.svg' },
@@ -99,6 +108,7 @@ export const PRODUCTOS: Producto[] = [
     precio: 39.99,
     antes: 49.99,
     fotos: ['/productos/conjunto-negro.svg'],
+    fondo: '#f0f0ee',
     tallas: ['S', 'M', 'L', 'XL'],
     colores: [{ nombre: 'Negro / blanco', hex: '#1c1c1c' }],
     descripcion: 'Chaqueta y pantalón a juego, con franjas laterales. Estilo noventero para el día a día.',
@@ -112,6 +122,7 @@ export const PRODUCTOS: Producto[] = [
     categoria: 'Gorras',
     precio: 12.99,
     fotos: ['/productos/gorra-negro.svg', '/productos/gorra-beige.svg'],
+    fondo: '#cfcfcd',
     tallas: ['Única'],
     colores: [
       { nombre: 'Negro', hex: '#1c1c1c', foto: '/productos/gorra-negro.svg' },
@@ -127,6 +138,7 @@ export const PRODUCTOS: Producto[] = [
     categoria: 'Camisetas',
     precio: 16.99,
     fotos: ['/productos/grafica-negro.svg'],
+    fondo: '#e2e2e0',
     tallas: ['S', 'M', 'L', 'XL'],
     colores: [{ nombre: 'Negro', hex: '#1c1c1c' }],
     descripcion: 'Estampado grande en la espalda y logo pequeño en el pecho. Diseño propio.',
