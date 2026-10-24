@@ -1,0 +1,484 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icono from '../../components/Icono.astro';
+import Tarjeta from '../../components/Tarjeta.astro';
+import { TIENDA } from '../../config';
+import { PRODUCTOS, precio, type Producto } from '../../productos';
+
+export function getStaticPaths() {
+  return PRODUCTOS.map((producto) => ({ params: { slug: producto.slug }, props: { producto } }));
+}
+
+const { producto: p } = Astro.props as { producto: Producto };
+const unaTalla = p.tallas.length === 1;
+const unColor = !p.colores || p.colores.length === 1;
+const descuento = p.antes ? Math.round((1 - p.precio / p.antes) * 100) : 0;
+const relacionados = PRODUCTOS.filter((o) => o.slug !== p.slug && !o.agotado)
+  .sort((a, b) => Number(b.categoria === p.categoria) - Number(a.categoria === p.categoria))
+  .slice(0, 4);
+
+const esPantalon = p.categoria === 'Pantalones';
+const guia = esPantalon
+  ? { cabecera: ['Talla', 'Cintura (cm)', 'Largo (cm)'], filas: [['28', '72', '98'], ['30', '76', '100'], ['32', '81', '102'], ['34', '86', '104'], ['36', '91', '106']] }
+  : { cabecera: ['Talla', 'Pecho (cm)', 'Largo (cm)'], filas: [['S', '104', '68'], ['M', '110', '71'], ['L', '116', '74'], ['XL', '122', '77']] };
+
+const datosProducto = JSON.stringify({ slug: p.slug, nombre: p.nombre, precio: p.precio, foto: p.fotos[0] });
+---
+
+<Base titulo={p.nombre} descripcion={`${p.descripcion} ${precio(p.precio)}. ${TIENDA.envio.resumen}.`} imagen={p.fotos[0]}>
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta">
+      <a href="/">Inicio</a> / <a href={`/?c=${encodeURIComponent(p.categoria)}#catalogo`}>{p.categoria}</a>
+    </nav>
+
+    <div class="ficha">
+      <div class="galeria">
+        <div class="fotos" data-fotos>
+          {p.fotos.map((f, i) => <img src={f} alt={`${p.nombre}, foto ${i + 1}`} width="800" height="1000" />)}
+        </div>
+        {
+          p.fotos.length > 1 ? (
+            <div class="miniaturas">
+              {p.fotos.map((f, i) => (
+                <button type="button" data-ir={i} aria-label={`Ver foto ${i + 1}`}>
+                  <img src={f} alt="" width="80" height="100" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          ) : null
+        }
+      </div>
+
+      <div class="info" data-producto={datosProducto}>
+        <div class="etiquetas">
+          {p.agotado ? <span class="etiqueta etiqueta--claro">Agotado</span> : null}
+          {!p.agotado && descuento > 0 ? <span class="etiqueta etiqueta--rojo">-{descuento}%</span> : null}
+          {!p.agotado && p.nuevo ? <span class="etiqueta etiqueta--acento">Nuevo</span> : null}
+          {p.ejemplo ? <span class="etiqueta etiqueta--claro">Ejemplo</span> : null}
+        </div>
+        <h1 class="display">{p.nombre}</h1>
+        <p class="precio grande">
+          {precio(p.precio)}{p.antes ? <s>{precio(p.antes)}</s> : null}
+        </p>
+
+        {
+          p.colores && p.colores.length > 0 ? (
+            <fieldset class="opciones">
+              <legend>
+                Color: <span data-color-elegido>{unColor ? p.colores[0].nombre : 'elige uno'}</span>
+              </legend>
+              <div class="colores">
+                {p.colores.map((c, i) => (
+                  <label class="color" title={c.nombre}>
+                    <input type="radio" name="color" value={c.nombre} checked={unColor && i === 0} />
+                    <span style={`background:${c.hex}`} />
+                    <span class="sr">{c.nombre}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ) : null
+        }
+
+        <fieldset class="opciones">
+          <legend>
+            Talla
+            {
+              !unaTalla ? (
+                <details class="guia">
+                  <summary>
+                    <Icono nombre="regla" tam={16} /> Guía de tallas
+                  </summary>
+                  <table>
+                    <thead>
+                      <tr>{guia.cabecera.map((c) => <th>{c}</th>)}</tr>
+                    </thead>
+                    <tbody>
+                      {guia.filas.map((f) => (
+                        <tr>{f.map((c) => <td>{c}</td>)}</tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p>Medidas de la prenda, aproximadas. ¿Dudas? Escríbenos tu altura y peso.</p>
+                </details>
+              ) : null
+            }
+          </legend>
+          <div class="tallas">
+            {
+              p.tallas.map((t) => (
+                <label class="talla">
+                  <input type="radio" name="talla" value={t} checked={unaTalla} />
+                  <span>{t}</span>
+                </label>
+              ))
+            }
+          </div>
+        </fieldset>
+
+        <p class="error" data-error-ficha hidden>Elige tu talla{!unColor ? ' y tu color' : ''}.</p>
+
+        {
+          p.agotado ? (
+            <button class="boton boton--ancho" type="button" disabled>
+              Agotado
+            </button>
+          ) : (
+            <div class="acciones">
+              <button class="boton boton--ancho" type="button" data-accion="comprar">
+                Comprar ahora
+              </button>
+              <button class="boton boton--claro boton--ancho" type="button" data-accion="anadir">
+                <Icono nombre="bolsa" tam={18} /> Añadir al carrito
+              </button>
+              <p class="anadido" data-anadido hidden>
+                Añadido al carrito ✓
+              </p>
+            </div>
+          )
+        }
+
+        <ul class="garantias">
+          <li><Icono nombre="camion" tam={20} /> {TIENDA.envio.resumen} · {TIENDA.envio.plazo}</li>
+          <li><Icono nombre="billete" tam={20} /> {TIENDA.pagos.join(' o ')}</li>
+          <li><Icono nombre="cambio" tam={20} /> {TIENDA.cambios}</li>
+        </ul>
+
+        <div class="descripcion">
+          <h2>Descripción</h2>
+          <p>{p.descripcion}</p>
+          {p.detalles ? <ul>{p.detalles.map((d) => <li>{d}</li>)}</ul> : null}
+        </div>
+      </div>
+    </div>
+
+    {
+      relacionados.length ? (
+        <section class="relacionados">
+          <h2 class="display">También te puede gustar</h2>
+          <div class="rejilla">
+            {relacionados.map((r) => (
+              <Tarjeta producto={r} />
+            ))}
+          </div>
+        </section>
+      ) : null
+    }
+  </div>
+</Base>
+
+<script>
+  import { abreCarrito, anade } from '../../scripts/carrito';
+
+  const info = document.querySelector<HTMLElement>('[data-producto]')!;
+  const producto = JSON.parse(info.dataset.producto!);
+  const error = document.querySelector<HTMLElement>('[data-error-ficha]')!;
+  const anadido = document.querySelector<HTMLElement>('[data-anadido]');
+  const hayColores = !!info.querySelector('input[name="color"]');
+
+  // El nombre del color elegido, al lado de "Color:".
+  info.querySelectorAll<HTMLInputElement>('input[name="color"]').forEach((r) =>
+    r.addEventListener('change', () => {
+      info.querySelector('[data-color-elegido]')!.textContent = r.value;
+    }),
+  );
+  info.addEventListener('change', () => (error.hidden = true));
+
+  function eleccion() {
+    const talla = info.querySelector<HTMLInputElement>('input[name="talla"]:checked')?.value;
+    const color = info.querySelector<HTMLInputElement>('input[name="color"]:checked')?.value;
+    if (!talla || (hayColores && !color)) {
+      error.hidden = false;
+      error.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return null;
+    }
+    return { talla, color };
+  }
+
+  info.querySelectorAll<HTMLButtonElement>('[data-accion]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const e = eleccion();
+      if (!e) return;
+      anade({ ...producto, ...e, cantidad: 1 });
+      if (b.dataset.accion === 'comprar') abreCarrito();
+      else if (anadido) {
+        anadido.hidden = false;
+        setTimeout(() => (anadido.hidden = true), 2500);
+      }
+    }),
+  );
+
+  // Miniaturas: llevan a esa foto en la galería deslizable.
+  const fotos = document.querySelector<HTMLElement>('[data-fotos]');
+  document.querySelectorAll<HTMLButtonElement>('[data-ir]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const i = Number(b.dataset.ir);
+      fotos?.scrollTo({ left: fotos.clientWidth * i, behavior: 'smooth' });
+    }),
+  );
+</script>
+
+<style>
+  .migas {
+    margin: 20px 0;
+    font-size: 13px;
+    color: var(--tinta-3);
+  }
+  .migas a {
+    text-decoration: none;
+    color: var(--tinta-2);
+  }
+  .ficha {
+    display: grid;
+    gap: 28px;
+  }
+  @media (min-width: 900px) {
+    .ficha {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    .galeria {
+      position: sticky;
+      top: 84px;
+    }
+  }
+  .galeria {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .fotos {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    border-radius: var(--radio);
+    background: #ebe8e2;
+    scrollbar-width: none;
+  }
+  .fotos img {
+    flex: none;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    scroll-snap-align: start;
+  }
+  .miniaturas {
+    display: flex;
+    gap: 8px;
+  }
+  .miniaturas button {
+    padding: 0;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #ebe8e2;
+  }
+  .miniaturas img {
+    width: 64px;
+    height: 80px;
+    object-fit: cover;
+  }
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .etiquetas {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .etiquetas:empty {
+    display: none;
+  }
+  h1 {
+    font-size: clamp(36px, 8vw, 56px);
+  }
+  .grande {
+    margin: 0;
+    font-size: 26px;
+  }
+  .opciones {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+  legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 10px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  legend span {
+    font-weight: 500;
+    color: var(--tinta-2);
+  }
+  .colores,
+  .tallas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .color input,
+  .talla input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .color span:not(.sr) {
+    display: block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgb(0 0 0 / 0.15);
+    box-shadow: 0 0 0 3px var(--fondo);
+    cursor: pointer;
+  }
+  .color input:checked + span {
+    box-shadow:
+      0 0 0 3px var(--fondo),
+      0 0 0 5px var(--tinta);
+  }
+  .color input:focus-visible + span,
+  .talla input:focus-visible + span {
+    outline: 3px solid var(--acento);
+    outline-offset: 3px;
+  }
+  .talla span {
+    display: grid;
+    place-items: center;
+    min-width: 56px;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    background: var(--carta);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .talla input:checked + span {
+    background: var(--tinta);
+    border-color: var(--tinta);
+    color: #fff;
+  }
+  .guia {
+    font-weight: 500;
+    position: relative;
+  }
+  .guia summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 13px;
+    text-decoration: underline;
+    color: var(--tinta-2);
+  }
+  .guia summary::-webkit-details-marker {
+    display: none;
+  }
+  .guia[open] {
+    width: 100%;
+  }
+  .guia table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--carta);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .guia th,
+  .guia td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--borde);
+  }
+  .guia p {
+    font-size: 12px;
+    color: var(--tinta-3);
+    margin: 8px 0 0;
+  }
+  .error {
+    margin: -6px 0 0;
+    color: var(--rojo);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .error[hidden],
+  .anadido[hidden] {
+    display: none;
+  }
+  .acciones {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .anadido {
+    margin: 0;
+    text-align: center;
+    color: var(--verde);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .garantias {
+    list-style: none;
+    margin: 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-radius: var(--radio);
+    background: var(--carta);
+    font-size: 14px;
+    color: var(--tinta-2);
+  }
+  .garantias li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .garantias :global(svg) {
+    flex: none;
+    color: var(--tinta);
+  }
+  .descripcion h2 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .descripcion p {
+    margin: 0;
+    color: var(--tinta-2);
+  }
+  .descripcion ul {
+    margin: 10px 0 0;
+    padding-left: 18px;
+    color: var(--tinta-2);
+    font-size: 14px;
+  }
+  .relacionados {
+    margin-top: 64px;
+  }
+  .relacionados h2 {
+    font-size: clamp(30px, 6vw, 44px);
+    margin-bottom: 20px;
+  }
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 12px;
+  }
+  @media (min-width: 900px) {
+    .rejilla {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px 20px;
+    }
+  }
+</style>

@@ -1,0 +1,192 @@
+@import '@fontsource/anton/400.css';
+@import '@fontsource-variable/inter';
+
+:root {
+  --fondo: #f5f3ef;
+  --carta: #ffffff;
+  --tinta: #111111;
+  --tinta-2: #55524c;
+  --tinta-3: #8b877f;
+  --borde: #e2ded6;
+  --acento: #c9a227;
+  --acento-suave: #f3ead0;
+  --rojo: #c23b22;
+  --verde: #1f7a4d;
+  --radio: 14px;
+  --ancho: 1200px;
+  --sombra: 0 10px 30px rgb(0 0 0 / 0.08);
+  --display: 'Anton', 'Impact', sans-serif;
+  --texto: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--tinta);
+  font-family: var(--texto);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.05;
+}
+
+.display {
+  font-family: var(--display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .contenedor {
+    padding: 0 32px;
+  }
+}
+
+/* ── Botones ─────────────────────────────────────────────────────────── */
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 24px;
+  border: 2px solid var(--tinta);
+  border-radius: 999px;
+  background: var(--tinta);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: transform 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.boton:hover {
+  transform: translateY(-1px);
+}
+
+.boton:active {
+  transform: translateY(1px);
+}
+
+.boton[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.boton--claro {
+  background: transparent;
+  color: var(--tinta);
+}
+
+.boton--whatsapp {
+  background: #1fa855;
+  border-color: #1fa855;
+}
+
+.boton--ancho {
+  width: 100%;
+}
+
+/* ── Etiquetas ───────────────────────────────────────────────────────── */
+
+.etiqueta {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--tinta);
+  color: #fff;
+}
+
+.etiqueta--acento {
+  background: var(--acento);
+  color: var(--tinta);
+}
+
+.etiqueta--rojo {
+  background: var(--rojo);
+}
+
+.etiqueta--claro {
+  background: #fff;
+  color: var(--tinta-2);
+  border: 1px solid var(--borde);
+}
+
+.precio {
+  font-weight: 800;
+}
+
+.precio s {
+  color: var(--tinta-3);
+  font-weight: 500;
+  margin-left: 6px;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 3px solid var(--acento);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
